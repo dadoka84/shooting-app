@@ -4,11 +4,16 @@ Offline-first React Native app (Expo SDK 58, TypeScript) for logging range trips
 
 ## Setup
 
-```bash
-cd code/shooting-app
+Windows PowerShell (after the repo is on GitHub):
+
+```powershell
+git clone https://github.com/dadoka84/shooting-app.git
+cd shooting-app
 npm install
 npx expo start
 ```
+
+The repo ships `package-lock.json` and `.npmrc` (`legacy-peer-deps=true`) for reliable installs on Windows.
 
 Open in Expo Go (iOS/Android) or a simulator. No EAS build required for this prototype.
 
