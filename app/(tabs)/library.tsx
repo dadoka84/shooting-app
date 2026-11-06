@@ -31,7 +31,6 @@ export default function LibraryScreen() {
 
   return (
     <ScreenScroll>
-      <Text style={styles.title}>Target library</Text>
       <Text style={styles.lead}>All photos you’ve saved from trips.</Text>
 
       <SectionHeader title="All targets" />
@@ -74,6 +73,5 @@ function formatTemplate(id: string): string {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: '800', color: AppColors.accentBrass },
   lead: { color: AppColors.textMuted, fontSize: 14, marginBottom: 4 },
 });

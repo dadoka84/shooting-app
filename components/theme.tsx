@@ -1,7 +1,8 @@
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StyleSheet, Text, View, type ViewProps } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, type ViewProps } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
+
+const CAMO_HEADER_IMAGE = require('@/assets/camo-header.png');
 
 /** Mottled “splotch” layers — reads more like woodland camo than flat stripes. */
 const CAMO_BLOBS: Array<{ w: number; h: number; left: `${number}%`; top: `${number}%`; bg: string; opacity: number }> = [
@@ -46,7 +47,7 @@ export function CamoBackground({ style, ...rest }: ViewProps) {
 
 const camoStyles = StyleSheet.create({
   fill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     flexDirection: 'column',
     overflow: 'hidden',
   },
@@ -159,13 +160,15 @@ const markStyles = StyleSheet.create({
 
 /** Native stack / tab header background (camo into status bar; title below inset). */
 export function TabHeaderBackground() {
-  const insets = useSafeAreaInsets();
   return (
     <View style={tabHeaderStyles.shell}>
-      <View style={[tabHeaderStyles.camoWrap, { marginTop: -insets.top, paddingTop: insets.top }]}>
-        <CamoBackground style={StyleSheet.absoluteFillObject} />
+      <ImageBackground
+        source={CAMO_HEADER_IMAGE}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+      >
         <View style={tabHeaderStyles.fade} />
-      </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -175,13 +178,9 @@ const tabHeaderStyles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
   },
-  camoWrap: {
-    flex: 1,
-    overflow: 'hidden',
-  },
   fade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13, 16, 13, 0.28)',
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(13, 16, 13, 0.32)',
   },
 });
 
@@ -189,23 +188,23 @@ type AppHeaderProps = {
   subtitle?: string;
 };
 
-/** In-screen hero: target icon on camo (title lives in the nav bar). */
+/** In-screen hero: camo + target mark; nav bar shows the app name (avoid duplicating title beside icon). */
 export function AppHeader({ subtitle }: AppHeaderProps) {
   return (
-    <View style={headerStyles.shell}>
-      <CamoBackground style={headerStyles.camoLayer} />
+    <ImageBackground
+      source={CAMO_HEADER_IMAGE}
+      style={headerStyles.shell}
+      imageStyle={headerStyles.shellImage}
+      resizeMode="cover"
+    >
       <View style={headerStyles.scrim} />
-      <View style={headerStyles.row}>
+      <View style={headerStyles.column}>
         <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz app mark">
           <PistolTargetMark size={48} />
         </View>
-        {subtitle ? (
-          <View style={headerStyles.wordmark}>
-            <Text style={headerStyles.sub}>{subtitle}</Text>
-          </View>
-        ) : null}
+        {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -216,22 +215,22 @@ const headerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     marginBottom: 16,
-    minHeight: 88,
+    minHeight: 120,
   },
-  camoLayer: {
-    ...StyleSheet.absoluteFillObject,
+  shellImage: {
+    borderRadius: 12,
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13, 16, 13, 0.38)',
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(13, 16, 13, 0.42)',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+  column: {
     zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    gap: 10,
   },
   markWrap: {
     width: 64,
@@ -243,12 +242,12 @@ const headerStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  wordmark: { flex: 1, justifyContent: 'center' },
   sub: {
     fontSize: 13,
     color: AppColors.accentBrass,
     fontWeight: '600',
     letterSpacing: 0.35,
     lineHeight: 18,
+    textAlign: 'center',
   },
 });

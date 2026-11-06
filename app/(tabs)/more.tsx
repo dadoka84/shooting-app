@@ -1,9 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { View } from '@/components/Themed';
 import { Card, ListDivider, ListRow, ScreenScroll, SectionHeader } from '@/components/ui';
-import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listStaticTips } from '@/lib/db/repository';
 
@@ -21,8 +19,6 @@ export default function MoreScreen() {
 
   return (
     <ScreenScroll>
-      <Text style={styles.title}>Settings & fundamentals</Text>
-
       <SectionHeader title="About this build" />
       <Card>
         <ListRow
@@ -50,7 +46,3 @@ export default function MoreScreen() {
     </ScreenScroll>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: '800', color: AppColors.accentBrass, marginBottom: 4 },
-});

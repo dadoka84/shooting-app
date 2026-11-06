@@ -21,7 +21,7 @@ export default function TabLayout() {
           borderTopColor: AppColors.border,
         },
         tabBarLabelStyle: { fontWeight: '600', fontSize: 11 },
-        headerTransparent: true,
+        headerTransparent: false,
         headerShadowVisible: false,
         headerBackground: () => <TabHeaderBackground />,
         headerStyle: {
