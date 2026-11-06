@@ -1,7 +1,6 @@
 import { Link } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
-import { View } from '@/components/Themed';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
 import type { ScoringStatus } from '@/lib/types';
@@ -171,6 +170,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 12,
+    backgroundColor: AppColors.background,
   },
   btn: {
     backgroundColor: AppColors.accentOliveBright,
@@ -209,6 +209,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     overflow: 'hidden',
+    /** subtle lift vs page so cards read as panels even on similar hues */
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
   },
   sectionHeader: {
     flexDirection: 'row',
