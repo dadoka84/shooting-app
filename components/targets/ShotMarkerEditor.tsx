@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { AppColors } from '@/constants/theme';
 import type { DraftShot } from '@/lib/types';
 import { newId } from '@/lib/id';
 import { ringValueForPoint } from '@/lib/scoring/mockBakerScore';
@@ -130,7 +131,7 @@ function DraggableMarker({
         {
           left,
           top,
-          borderColor: selected ? '#f97316' : '#22c55e',
+          borderColor: selected ? AppColors.accentBrass : AppColors.accentOliveBright,
         },
       ]}
     >
@@ -148,12 +149,14 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     aspectRatio: 3 / 4,
-    backgroundColor: '#111',
+    backgroundColor: AppColors.surface,
     borderRadius: 8,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: AppColors.border,
   },
   imagePressable: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   image: {
     width: '100%',
@@ -175,7 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   ringText: {
-    color: '#cbd5e1',
+    color: AppColors.accentBrass,
     fontSize: 10,
   },
   hint: {
@@ -183,7 +186,7 @@ const styles = StyleSheet.create({
     bottom: 4,
     left: 8,
     right: 8,
-    color: '#e2e8f0',
+    color: AppColors.textPrimary,
     fontSize: 11,
     textAlign: 'center',
     backgroundColor: 'rgba(0,0,0,0.45)',

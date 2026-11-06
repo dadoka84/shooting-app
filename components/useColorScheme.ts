@@ -1,6 +1,7 @@
-import { useColorScheme as useColorSchemeCore } from 'react-native';
-
+/**
+ * WhatShotz Phase 1: single dark tactical theme (forced).
+ * Removes washed-out “light” system UI on phones set to light mode.
+ */
 export const useColorScheme = () => {
-  const coreScheme = useColorSchemeCore();
-  return coreScheme === 'dark' ? 'dark' : 'light';
+  return 'dark' as const;
 };

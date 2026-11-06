@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listWeapons } from '@/lib/db/repository';
 import type { Weapon } from '@/lib/types';
@@ -40,5 +41,5 @@ export default function WeaponsScreen() {
 }
 
 const styles = StyleSheet.create({
-  item: { paddingVertical: 10, fontSize: 16, color: '#2563eb' },
+  item: { paddingVertical: 10, fontSize: 16, color: AppColors.accentBrass, fontWeight: '600' },
 });

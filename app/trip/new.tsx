@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createTrip, listWeapons } from '@/lib/db/repository';
 import type { Possession, TripWeaponInput, Weapon } from '@/lib/types';
@@ -198,12 +200,12 @@ function LabelField({
   return (
     <>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={[styles.input, multiline && styles.multiline]}
+      <ThemedTextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         multiline={multiline}
+        style={multiline ? styles.multiline : undefined}
       />
     </>
   );
@@ -211,36 +213,37 @@ function LabelField({
 
 const styles = StyleSheet.create({
   pad: { flexGrow: 1 },
-  meta: { opacity: 0.7 },
-  section: { fontSize: 18, fontWeight: '600', marginTop: 12 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 4,
-  },
+  meta: { color: AppColors.textMuted },
+  section: { fontSize: 18, fontWeight: '700', marginTop: 12, color: AppColors.accentBrass },
+  label: { fontWeight: '600', marginTop: 8, color: AppColors.textPrimary },
   multiline: { minHeight: 72, textAlignVertical: 'top' },
   weaponRow: {
     marginTop: 8,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: AppColors.border,
     gap: 4,
+    backgroundColor: AppColors.surfaceRaised,
   },
-  rowTitle: { fontWeight: '600' },
+  rowTitle: { fontWeight: '700', color: AppColors.textPrimary },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: {
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#94a3b8',
+    borderColor: AppColors.border,
+    color: AppColors.textMuted,
+    overflow: 'hidden',
   },
-  chipActive: { backgroundColor: '#2563eb', color: '#fff', borderColor: '#2563eb' },
-  weaponPick: { paddingVertical: 4, color: '#334155' },
-  weaponPickActive: { color: '#2563eb', fontWeight: '700' },
-  hint: { color: '#64748b', paddingVertical: 4 },
+  chipActive: {
+    backgroundColor: AppColors.accentOliveBright,
+    color: AppColors.textInverse,
+    borderColor: AppColors.accentBrass,
+    fontWeight: '700',
+  },
+  weaponPick: { paddingVertical: 4, color: AppColors.textMuted },
+  weaponPickActive: { color: AppColors.accentBrass, fontWeight: '700' },
+  hint: { color: AppColors.textMuted, paddingVertical: 4 },
 });

@@ -2,10 +2,13 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { AppHeader } from '@/components/theme';
 import { LinkButton, PrimaryButton, ScreenScroll } from '@/components/ui';
+import { UI_BUILD_STAMP } from '@/constants/buildStamp';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
-import { recentTargets, recentTrips } from '@/lib/db/repository';
-import type { TargetListRow, Trip } from '@/lib/types';
+import { recentTargets, recentTrips, type TargetListRow } from '@/lib/db/repository';
+import type { Trip } from '@/lib/types';
 
 export default function HomeScreen() {
   const { db, refreshKey } = useDatabase();
@@ -24,8 +27,11 @@ export default function HomeScreen() {
 
   return (
     <ScreenScroll>
-      <Text style={styles.title}>Shooting journal</Text>
-      <Text style={styles.subtitle}>Phase 1 prototype — offline, local-only data</Text>
+      <View style={styles.buildStamp}>
+        <Text style={styles.buildStampText}>{UI_BUILD_STAMP}</Text>
+      </View>
+      <AppHeader subtitle="Phase 1 · offline range log" />
+      <Text style={styles.subtitle}>Shooting journal — trips, targets, brass‑ring scoring (mock)</Text>
 
       <View style={styles.row}>
         <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
@@ -73,9 +79,24 @@ function formatDate(ms: number): string {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 24, fontWeight: '700' },
-  subtitle: { opacity: 0.7, marginBottom: 8 },
-  section: { fontSize: 18, fontWeight: '600', marginTop: 8 },
-  listItem: { paddingVertical: 6, color: '#2563eb' },
-  row: { gap: 8 },
+  buildStamp: {
+    alignSelf: 'flex-start',
+    backgroundColor: AppColors.surfaceRaised,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: AppColors.accentBrass,
+    marginBottom: 4,
+  },
+  buildStampText: {
+    color: AppColors.accentBrass,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  subtitle: { color: AppColors.textMuted, marginBottom: 8, fontSize: 14 },
+  section: { fontSize: 18, fontWeight: '700', marginTop: 8, color: AppColors.accentBrass },
+  listItem: { paddingVertical: 8, color: AppColors.accentBrass, fontWeight: '600' },
+  row: { gap: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
 });

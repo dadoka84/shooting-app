@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listAllTargets, type TargetListRow } from '@/lib/db/repository';
 
@@ -43,6 +44,6 @@ function formatDate(ms: number): string {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 20, fontWeight: '600', marginBottom: 8 },
-  item: { paddingVertical: 10, color: '#2563eb' },
+  title: { fontSize: 20, fontWeight: '700', marginBottom: 8, color: AppColors.accentBrass },
+  item: { paddingVertical: 10, color: AppColors.accentBrass, fontWeight: '600' },
 });

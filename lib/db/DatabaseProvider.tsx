@@ -7,6 +7,8 @@ import React, {
   useState,
 } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+
+import { AppColors } from '@/constants/theme';
 import * as SQLite from 'expo-sqlite';
 import { DB_NAME, runMigrations } from '@/lib/db/migrations';
 
@@ -79,5 +81,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: AppColors.background,
   },
 });

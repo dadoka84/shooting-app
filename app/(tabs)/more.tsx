@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listStaticTips } from '@/lib/db/repository';
 
@@ -46,15 +47,17 @@ export default function MoreScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: '700' },
-  section: { fontSize: 18, fontWeight: '600', marginTop: 12 },
+  title: { fontSize: 22, fontWeight: '800', color: AppColors.accentBrass },
+  section: { fontSize: 18, fontWeight: '700', marginTop: 12, color: AppColors.accentBrass },
   card: {
     padding: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(148,163,184,0.15)',
+    backgroundColor: AppColors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: AppColors.border,
     gap: 4,
   },
-  cardTitle: { fontWeight: '600' },
+  cardTitle: { fontWeight: '700', color: AppColors.textPrimary },
   tip: { paddingVertical: 8, gap: 4 },
-  tipTitle: { fontWeight: '600' },
+  tipTitle: { fontWeight: '700', color: AppColors.accentBrass },
 });

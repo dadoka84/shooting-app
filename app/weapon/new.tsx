@@ -1,8 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
+import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createWeapon } from '@/lib/db/repository';
 import type { WeaponCategory } from '@/lib/types';
@@ -117,8 +119,7 @@ function Field({
   return (
     <>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={styles.input}
+      <ThemedTextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -130,14 +131,7 @@ function Field({
 
 const styles = StyleSheet.create({
   pad: { flexGrow: 1 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 4,
-  },
+  label: { fontWeight: '600', marginTop: 8, color: AppColors.textPrimary },
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -145,12 +139,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#94a3b8',
+    borderColor: AppColors.border,
     alignSelf: 'flex-start',
+    color: AppColors.textMuted,
+    overflow: 'hidden',
   },
   chipActive: {
-    backgroundColor: '#2563eb',
-    color: '#fff',
-    borderColor: '#2563eb',
+    backgroundColor: AppColors.accentOliveBright,
+    color: AppColors.textInverse,
+    borderColor: AppColors.accentBrass,
+    fontWeight: '700',
   },
 });

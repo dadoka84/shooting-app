@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Alert, FlatList, Image, ScrollView, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import {
   createTargetFromPhoto,
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '700' },
   section: { fontSize: 18, fontWeight: '600', marginTop: 12 },
   targetRow: { flexDirection: 'row', gap: 10, marginTop: 10, alignItems: 'center' },
-  thumb: { width: 72, height: 96, borderRadius: 6, backgroundColor: '#111' },
+  thumb: { width: 72, height: 96, borderRadius: 6, backgroundColor: AppColors.surfaceRaised },
   targetMeta: { flex: 1, gap: 6 },
-  link: { color: '#2563eb' },
+  link: { color: AppColors.accentBrass, fontWeight: '700' },
 });

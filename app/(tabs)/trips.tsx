@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { LinkButton, PrimaryButton, ScreenScroll } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { getTripLocation, listTrips } from '@/lib/db/repository';
 import type { Trip } from '@/lib/types';
@@ -52,5 +53,5 @@ function formatDate(ms: number): string {
 }
 
 const styles = StyleSheet.create({
-  item: { paddingVertical: 10, fontSize: 16, color: '#2563eb' },
+  item: { paddingVertical: 10, fontSize: 16, color: AppColors.accentBrass, fontWeight: '600' },
 });

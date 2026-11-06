@@ -1,19 +1,24 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+import { AppColors } from '@/constants/theme';
 
+const tint = AppColors.accentBrass;
+const tabInactive = AppColors.textMuted;
+
+/**
+ * Light branch kept for hooks compatibility; app forces dark via useColorScheme.
+ */
 export default {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    text: '#1a1f18',
+    background: '#eef0e8',
+    tint,
+    tabIconDefault: '#6b725f',
+    tabIconSelected: AppColors.accentOliveBright,
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    text: AppColors.textPrimary,
+    background: AppColors.background,
+    tint,
+    tabIconDefault: tabInactive,
+    tabIconSelected: tint,
   },
 };

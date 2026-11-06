@@ -1,11 +1,13 @@
-import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 import 'react-native-gesture-handler';
+import { useFonts } from 'expo-font';
+import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useMemo } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { AppColors } from '@/constants/theme';
 import { DatabaseProvider } from '@/lib/db/DatabaseProvider';
 
 export { ErrorBoundary } from 'expo-router';
@@ -36,18 +38,42 @@ export default function RootLayout() {
   }
 
   return (
-    <DatabaseProvider>
-      <RootLayoutNav />
-    </DatabaseProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppColors.background }}>
+      <DatabaseProvider>
+        <RootLayoutNav />
+      </DatabaseProvider>
+    </GestureHandlerRootView>
   );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const navTheme = useMemo(
+    () => ({
+      ...DarkTheme,
+      colors: {
+        ...DarkTheme.colors,
+        primary: AppColors.accentBrass,
+        background: AppColors.background,
+        card: AppColors.surface,
+        text: AppColors.textPrimary,
+        border: AppColors.border,
+        notification: AppColors.accentOliveBright,
+      },
+    }),
+    [],
+  );
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <ThemeProvider value={navTheme}>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: AppColors.surface },
+          headerTintColor: AppColors.accentBrass,
+          headerTitleStyle: { fontWeight: '700', color: AppColors.textPrimary },
+          contentStyle: { backgroundColor: AppColors.background },
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="trip/new" options={{ title: 'New trip' }} />
         <Stack.Screen name="trip/[id]" options={{ title: 'Trip' }} />

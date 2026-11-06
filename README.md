@@ -1,6 +1,16 @@
-# Shooting app — Phase 1 validation prototype
+# WhatShotz — Phase 1 validation prototype
 
 Offline-first React Native app (Expo SDK 58, TypeScript) for logging range trips, weapons, target photos, and **manual shot marking with mock B-27 scoring** (milestones M1–M5).
+
+## Brand / theme (placeholder)
+
+Dark **tactical** UI: olive greens, horizontal **camo** bands, **brass** accents, near-black panels. Placeholder **WhatShotz** wordmark + crosshair on **Home** (`app/(tabs)/index.tsx`, `components/theme.tsx`). Tweak colors in `constants/theme.ts`.
+
+**If the app still looks like default Expo (blue / white):** you are running an **old copy** or a **cached** bundle.
+
+1. On **Home**, you must see a small brass-bordered strip: **`WhatShotz · theme-2026-11-06-b`** (from `constants/buildStamp.ts`). If it’s missing, pull the latest from Context / re-unzip and reinstall.
+2. Stop Metro, then: `npx expo start -c` (clears cache). In Expo Go, **reload** the app.
+3. Confirm `app/(tabs)/index.tsx` imports `AppHeader` from `@/components/theme`.
 
 ## Setup
 

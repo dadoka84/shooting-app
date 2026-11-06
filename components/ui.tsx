@@ -2,6 +2,8 @@ import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { View } from '@/components/Themed';
 
+import { AppColors } from '@/constants/theme';
+
 export function PrimaryButton({
   label,
   onPress,
@@ -15,7 +17,11 @@ export function PrimaryButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={[styles.btn, disabled && styles.btnDisabled]}
+      style={({ pressed }) => [
+        styles.btn,
+        pressed && !disabled && styles.btnPressed,
+        disabled && styles.btnDisabled,
+      ]}
     >
       <Text style={styles.btnText}>{label}</Text>
     </Pressable>
@@ -25,7 +31,7 @@ export function PrimaryButton({
 export function LinkButton({ href, label }: { href: string; label: string }) {
   return (
     <Link href={href as never} asChild>
-      <Pressable style={styles.linkBtn}>
+      <Pressable style={({ pressed }) => [styles.linkBtn, pressed && styles.linkPressed]}>
         <Text style={styles.linkText}>{label}</Text>
       </Pressable>
     </Link>
@@ -43,24 +49,34 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   btn: {
-    backgroundColor: '#2563eb',
+    backgroundColor: AppColors.accentOliveBright,
+    borderWidth: 1,
+    borderColor: AppColors.accentBrass,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
+  btnPressed: {
+    backgroundColor: AppColors.accentOlive,
+  },
   btnDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
   btnText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: AppColors.textInverse,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   linkBtn: {
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  linkPressed: {
+    opacity: 0.85,
   },
   linkText: {
-    color: '#2563eb',
-    fontWeight: '600',
+    color: AppColors.accentBrass,
+    fontWeight: '700',
   },
 });
