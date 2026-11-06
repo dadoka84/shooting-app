@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { AppColors } from '@/constants/theme';
@@ -39,9 +40,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppColors.background }}>
-      <DatabaseProvider>
-        <RootLayoutNav />
-      </DatabaseProvider>
+      <SafeAreaProvider>
+        <DatabaseProvider>
+          <RootLayoutNav />
+        </DatabaseProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

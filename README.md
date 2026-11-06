@@ -8,7 +8,7 @@ Dark **tactical** UI: olive greens, horizontal **camo** bands, **brass** accents
 
 **If the app still looks like default Expo (blue / white):** you are running an **old copy** or a **cached** bundle.
 
-1. **Home** should show a **camo-backed** block with a **bullseye** icon and **WhatShotz** (`components/theme.tsx` → `AppHeader`). Top tab headers use the same camo treatment.
+1. **Home** shows a **camo** block with a **bullseye** icon; the **app name** is in the **top nav bar** only. List content uses **safe-area** padding so it does not sit under the status bar.
 2. Stop Metro, then: `npx expo start -c` (clears cache). In Expo Go, **reload** the app.
 3. Confirm `app/(tabs)/index.tsx` imports `AppHeader` from `@/components/theme`.
 

@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/constants/theme';
 import type { ScoringStatus } from '@/lib/types';
@@ -40,7 +41,11 @@ export function LinkButton({ href, label }: { href: string; label: string }) {
 }
 
 export function ScreenScroll({ children }: { children: React.ReactNode }) {
-  return <View style={styles.screen}>{children}</View>;
+  return (
+    <SafeAreaView style={styles.safe} edges={['left', 'right', 'bottom']}>
+      <View style={styles.screen}>{children}</View>
+    </SafeAreaView>
+  );
 }
 
 export type StatusTone = 'success' | 'warning' | 'neutral' | 'info';
@@ -84,7 +89,9 @@ export function StatusPill({ label, tone }: { label: string; tone: StatusTone })
 
   return (
     <View style={[styles.pill, pillStyle]}>
-      <Text style={[styles.pillText, textStyle]}>{label}</Text>
+      <Text style={[styles.pillText, textStyle]} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -166,10 +173,16 @@ export function targetStatusDisplay(
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: AppColors.background,
+  },
   screen: {
     flex: 1,
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
+    gap: 14,
     backgroundColor: AppColors.background,
   },
   btn: {
@@ -220,10 +233,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
-    marginBottom: -4,
+    gap: 10,
+    marginTop: 6,
+    marginBottom: 8,
   },
   sectionTitle: {
+    flex: 1,
+    minWidth: 0,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.6,
@@ -232,13 +248,16 @@ const styles = StyleSheet.create({
   },
   sectionAction: {
     flexShrink: 0,
+    maxWidth: '52%',
+    alignItems: 'flex-end',
   },
   pill: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
+    maxWidth: 120,
   },
   pillSuccess: {
     backgroundColor: AppColors.successMuted,
@@ -257,7 +276,7 @@ const styles = StyleSheet.create({
     borderColor: '#2a3d4a',
   },
   pillText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -277,11 +296,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    width: '100%',
   },
   listRowTextCol: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
     minWidth: 0,
     gap: 4,
+    paddingRight: 4,
   },
   listRowTitle: {
     color: AppColors.textPrimary,
@@ -296,7 +319,9 @@ const styles = StyleSheet.create({
   listRowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    flexShrink: 0,
+    flexGrow: 0,
   },
   chevron: {
     color: AppColors.textMuted,

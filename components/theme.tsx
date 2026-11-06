@@ -1,26 +1,44 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, Text, View, type ViewProps } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
 
-const CAMO_SEQUENCE = [
-  AppColors.camoA,
-  AppColors.camoB,
-  AppColors.camoC,
-  AppColors.camoA,
-  AppColors.camoB,
-  AppColors.camoC,
-  AppColors.camoA,
-  AppColors.camoB,
-] as const;
+/** Mottled “splotch” layers — reads more like woodland camo than flat stripes. */
+const CAMO_BLOBS: Array<{ w: number; h: number; left: `${number}%`; top: `${number}%`; bg: string; opacity: number }> = [
+  { w: 120, h: 90, left: '5%', top: '8%', bg: AppColors.camoA, opacity: 0.95 },
+  { w: 100, h: 100, left: '42%', top: '0%', bg: AppColors.camoC, opacity: 0.85 },
+  { w: 140, h: 70, left: '55%', top: '45%', bg: AppColors.camoB, opacity: 0.9 },
+  { w: 90, h: 110, left: '0%', top: '40%', bg: AppColors.camoB, opacity: 0.75 },
+  { w: 80, h: 80, left: '70%', top: '10%', bg: AppColors.camoA, opacity: 0.7 },
+  { w: 110, h: 95, left: '25%', top: '55%', bg: AppColors.camoC, opacity: 0.8 },
+];
+
+const STRIPE_UNDERLAY = [AppColors.camoA, AppColors.camoB, AppColors.camoC, AppColors.camoA, AppColors.camoB] as const;
 
 /**
- * Full-width camo stripe stack (fills container height).
+ * Full-width camo fill: stripe base + soft blob overlays.
  */
 export function CamoBackground({ style, ...rest }: ViewProps) {
   return (
     <View style={[camoStyles.fill, style]} {...rest}>
-      {CAMO_SEQUENCE.map((bg, i) => (
-        <View key={i} style={[camoStyles.stripeRow, { backgroundColor: bg }]} />
+      {STRIPE_UNDERLAY.map((bg, i) => (
+        <View key={`s-${i}`} style={[camoStyles.stripeRow, { backgroundColor: bg }]} />
+      ))}
+      {CAMO_BLOBS.map((b, i) => (
+        <View
+          key={`b-${i}`}
+          style={[
+            camoStyles.blob,
+            {
+              width: b.w,
+              height: b.h,
+              left: b.left,
+              top: b.top,
+              backgroundColor: b.bg,
+              opacity: b.opacity,
+            },
+          ]}
+        />
       ))}
     </View>
   );
@@ -30,10 +48,16 @@ const camoStyles = StyleSheet.create({
   fill: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'column',
+    overflow: 'hidden',
   },
   stripeRow: {
     flex: 1,
-    minHeight: 3,
+    minHeight: 4,
+  },
+  blob: {
+    position: 'absolute',
+    borderRadius: 40,
+    transform: [{ rotate: '12deg' }],
   },
 });
 
@@ -133,12 +157,15 @@ const markStyles = StyleSheet.create({
   },
 });
 
-/** Native stack / tab header background (camo fill) */
+/** Native stack / tab header background (camo into status bar; title below inset). */
 export function TabHeaderBackground() {
+  const insets = useSafeAreaInsets();
   return (
     <View style={tabHeaderStyles.shell}>
-      <CamoBackground />
-      <View style={tabHeaderStyles.fade} />
+      <View style={[tabHeaderStyles.camoWrap, { marginTop: -insets.top, paddingTop: insets.top }]}>
+        <CamoBackground style={StyleSheet.absoluteFillObject} />
+        <View style={tabHeaderStyles.fade} />
+      </View>
     </View>
   );
 }
@@ -148,9 +175,13 @@ const tabHeaderStyles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
   },
+  camoWrap: {
+    flex: 1,
+    overflow: 'hidden',
+  },
   fade: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13, 16, 13, 0.35)',
+    backgroundColor: 'rgba(13, 16, 13, 0.28)',
   },
 });
 
@@ -158,6 +189,7 @@ type AppHeaderProps = {
   subtitle?: string;
 };
 
+/** In-screen hero: target icon on camo (title lives in the nav bar). */
 export function AppHeader({ subtitle }: AppHeaderProps) {
   return (
     <View style={headerStyles.shell}>
@@ -165,12 +197,13 @@ export function AppHeader({ subtitle }: AppHeaderProps) {
       <View style={headerStyles.scrim} />
       <View style={headerStyles.row}>
         <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz app mark">
-          <PistolTargetMark size={44} />
+          <PistolTargetMark size={48} />
         </View>
-        <View style={headerStyles.wordmark}>
-          <Text style={headerStyles.title}>WhatShotz</Text>
-          {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
-        </View>
+        {subtitle ? (
+          <View style={headerStyles.wordmark}>
+            <Text style={headerStyles.sub}>{subtitle}</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -183,49 +216,39 @@ const headerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     marginBottom: 16,
-    minHeight: 92,
+    minHeight: 88,
   },
   camoLayer: {
     ...StyleSheet.absoluteFillObject,
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13, 16, 13, 0.42)',
+    backgroundColor: 'rgba(13, 16, 13, 0.38)',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 16,
     zIndex: 1,
   },
   markWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: AppColors.accentBrassDim,
-    backgroundColor: 'rgba(13, 16, 13, 0.55)',
+    backgroundColor: 'rgba(13, 16, 13, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  wordmark: { flex: 1 },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-    color: AppColors.textPrimary,
-    textTransform: 'uppercase',
-    textShadowColor: 'rgba(0,0,0,0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
+  wordmark: { flex: 1, justifyContent: 'center' },
   sub: {
-    marginTop: 2,
-    fontSize: 12,
+    fontSize: 13,
     color: AppColors.accentBrass,
     fontWeight: '600',
-    letterSpacing: 0.4,
+    letterSpacing: 0.35,
+    lineHeight: 18,
   },
 });
