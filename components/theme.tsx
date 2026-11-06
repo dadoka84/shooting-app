@@ -2,8 +2,43 @@ import { StyleSheet, Text, View, type ViewProps } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
 
+const CAMO_SEQUENCE = [
+  AppColors.camoA,
+  AppColors.camoB,
+  AppColors.camoC,
+  AppColors.camoA,
+  AppColors.camoB,
+  AppColors.camoC,
+  AppColors.camoA,
+  AppColors.camoB,
+] as const;
+
 /**
- * Subtle horizontal camo band — reads “tactical” without heavy image assets.
+ * Full-width camo stripe stack (fills container height).
+ */
+export function CamoBackground({ style, ...rest }: ViewProps) {
+  return (
+    <View style={[camoStyles.fill, style]} {...rest}>
+      {CAMO_SEQUENCE.map((bg, i) => (
+        <View key={i} style={[camoStyles.stripeRow, { backgroundColor: bg }]} />
+      ))}
+    </View>
+  );
+}
+
+const camoStyles = StyleSheet.create({
+  fill: {
+    ...StyleSheet.absoluteFillObject,
+    flexDirection: 'column',
+  },
+  stripeRow: {
+    flex: 1,
+    minHeight: 3,
+  },
+});
+
+/**
+ * Subtle horizontal camo band — legacy accent strip (optional).
  */
 export function CamoBand({ style, ...rest }: ViewProps) {
   return (
@@ -28,75 +63,152 @@ const bandStyles = StyleSheet.create({
   stripe: { flex: 1 },
 });
 
+/** Concentric rings = pistol paper target at a glance */
+export function PistolTargetMark({ size = 48 }: { size?: number }) {
+  const outer = size;
+  const mid = size * 0.65;
+  const inner = size * 0.36;
+  const dot = size * 0.14;
+  return (
+    <View style={[markStyles.wrap, { width: outer, height: outer }]}>
+      <View
+        style={[
+          markStyles.ring,
+          {
+            width: outer - 4,
+            height: outer - 4,
+            borderRadius: (outer - 4) / 2,
+          },
+        ]}
+      />
+      <View
+        style={[
+          markStyles.ring,
+          {
+            width: mid,
+            height: mid,
+            borderRadius: mid / 2,
+          },
+        ]}
+      />
+      <View
+        style={[
+          markStyles.ring,
+          {
+            width: inner,
+            height: inner,
+            borderRadius: inner / 2,
+          },
+        ]}
+      />
+      <View
+        style={[
+          markStyles.bull,
+          {
+            width: dot,
+            height: dot,
+            borderRadius: dot / 2,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
+const markStyles = StyleSheet.create({
+  wrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: AppColors.accentBrass,
+  },
+  bull: {
+    position: 'absolute',
+    backgroundColor: AppColors.accentOliveBright,
+    borderWidth: 1,
+    borderColor: AppColors.accentBrass,
+  },
+});
+
+/** Native stack / tab header background (camo fill) */
+export function TabHeaderBackground() {
+  return (
+    <View style={tabHeaderStyles.shell}>
+      <CamoBackground />
+      <View style={tabHeaderStyles.fade} />
+    </View>
+  );
+}
+
+const tabHeaderStyles = StyleSheet.create({
+  shell: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  fade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(13, 16, 13, 0.35)',
+  },
+});
+
 type AppHeaderProps = {
   subtitle?: string;
 };
 
-/** Crosshair + wordmark placeholder until a real logo asset ships. */
 export function AppHeader({ subtitle }: AppHeaderProps) {
   return (
-    <View style={headerStyles.block}>
-      <CamoBand style={headerStyles.band} />
+    <View style={headerStyles.shell}>
+      <CamoBackground style={headerStyles.camoLayer} />
+      <View style={headerStyles.scrim} />
       <View style={headerStyles.row}>
-        <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz logo placeholder">
-          <View style={headerStyles.crosshair}>
-            <View style={headerStyles.chH} />
-            <View style={headerStyles.chV} />
-            <View style={headerStyles.chDot} />
-          </View>
+        <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz app mark">
+          <PistolTargetMark size={44} />
         </View>
         <View style={headerStyles.wordmark}>
           <Text style={headerStyles.title}>WhatShotz</Text>
           {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
         </View>
       </View>
-      <CamoBand style={headerStyles.bandBottom} />
     </View>
   );
 }
 
 const headerStyles = StyleSheet.create({
-  block: { marginBottom: 16, gap: 10 },
-  band: { alignSelf: 'stretch' },
-  bandBottom: { alignSelf: 'stretch', opacity: 0.7 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  markWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: AppColors.accentBrass,
-    backgroundColor: AppColors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  crosshair: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chH: {
-    position: 'absolute',
-    width: 22,
-    height: 2,
-    backgroundColor: AppColors.accentBrass,
-    borderRadius: 1,
-  },
-  chV: {
-    position: 'absolute',
-    width: 2,
-    height: 22,
-    backgroundColor: AppColors.accentBrass,
-    borderRadius: 1,
-  },
-  chDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: AppColors.accentOliveBright,
+  shell: {
+    borderRadius: 12,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: AppColors.accentBrass,
+    borderColor: AppColors.border,
+    marginBottom: 16,
+    minHeight: 92,
+  },
+  camoLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(13, 16, 13, 0.42)',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    zIndex: 1,
+  },
+  markWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: AppColors.accentBrassDim,
+    backgroundColor: 'rgba(13, 16, 13, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   wordmark: { flex: 1 },
   title: {
@@ -105,6 +217,9 @@ const headerStyles = StyleSheet.create({
     letterSpacing: 0.8,
     color: AppColors.textPrimary,
     textTransform: 'uppercase',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   sub: {
     marginTop: 2,

@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
+import { TabHeaderBackground } from '@/components/theme';
 import { AppColors } from '@/constants/theme';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -20,13 +21,21 @@ export default function TabLayout() {
           borderTopColor: AppColors.border,
         },
         tabBarLabelStyle: { fontWeight: '600', fontSize: 11 },
+        headerTransparent: true,
+        headerShadowVisible: false,
+        headerBackground: () => <TabHeaderBackground />,
         headerStyle: {
-          backgroundColor: AppColors.surface,
-          borderBottomColor: AppColors.border,
-          borderBottomWidth: 1,
+          backgroundColor: 'transparent',
         },
         headerTintColor: AppColors.accentBrass,
-        headerTitleStyle: { fontWeight: '800', color: AppColors.textPrimary, letterSpacing: 0.5 },
+        headerTitleStyle: {
+          fontWeight: '800',
+          color: AppColors.textPrimary,
+          letterSpacing: 0.5,
+          textShadowColor: 'rgba(0,0,0,0.45)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
         headerShown: useClientOnlyValue(false, true),
       }}
     >
