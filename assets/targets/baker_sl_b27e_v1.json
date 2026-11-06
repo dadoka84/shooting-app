@@ -1,0 +1,21 @@
+{
+  "id": "baker_sl_b27e_v1",
+  "name": "Baker Targets SL-B27E",
+  "zones": ["torso"],
+  "scoringCenterNorm": { "x": 0.5, "y": 0.52 },
+  "ringRadiiNorm": {
+    "x": 0.028,
+    "ten": 0.055,
+    "nine": 0.085,
+    "eight": 0.115,
+    "seven": 0.145
+  },
+  "silhouetteBoundsNorm": {
+    "minX": 0.22,
+    "maxX": 0.78,
+    "minY": 0.12,
+    "maxY": 0.88
+  },
+  "maxScorePerShot": 10,
+  "notes": "Placeholder geometry — trace from reference scan in M6"
+}
