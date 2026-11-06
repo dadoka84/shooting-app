@@ -1,8 +1,18 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { LinkButton, PrimaryButton, ScreenScroll } from '@/components/ui';
+import { StyleSheet } from 'react-native';
+import { Text, View } from '@/components/Themed';
+import {
+  Card,
+  EmptyState,
+  LinkButton,
+  ListDivider,
+  ListRow,
+  PrimaryButton,
+  ScreenScroll,
+  SectionHeader,
+  StatusPill,
+} from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { getTripLocation, listTrips } from '@/lib/db/repository';
@@ -31,27 +41,49 @@ export default function TripsScreen() {
 
   return (
     <ScreenScroll>
+      <Text style={styles.lead}>Log range visits and attach targets.</Text>
       <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
-      <FlatList
-        data={rows}
-        keyExtractor={(item) => item.id}
-        scrollEnabled={false}
-        ListEmptyComponent={<Text>No trips logged yet.</Text>}
-        renderItem={({ item }) => (
-          <Text style={styles.item} onPress={() => router.push(`/trip/${item.id}`)}>
-            {formatDate(item.started_at)} — {item.location_name ?? 'Unknown range'}
-          </Text>
+
+      <SectionHeader title="Your trips" />
+      <Card>
+        {rows.length === 0 ? (
+          <EmptyState title="No trips logged yet" hint="Create a trip to get started." />
+        ) : (
+          rows.map((item, i) => (
+            <View key={item.id}>
+              <ListRow
+                title={item.location_name ?? 'Unknown range'}
+                subtitle={formatSubtitle(item)}
+                onPress={() => router.push(`/trip/${item.id}`)}
+                right={
+                  <StatusPill
+                    label={item.ended_at != null ? 'Done' : 'Open'}
+                    tone={item.ended_at != null ? 'success' : 'warning'}
+                  />
+                }
+              />
+              {i < rows.length - 1 ? <ListDivider /> : null}
+            </View>
+          ))
         )}
-      />
+      </Card>
+
       <LinkButton href="/(tabs)/index" label="Back to home" />
     </ScreenScroll>
   );
 }
 
-function formatDate(ms: number): string {
-  return new Date(ms).toLocaleString();
+function formatSubtitle(t: Trip): string {
+  const when = new Date(t.started_at).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const extra = t.discipline_tag?.trim();
+  return extra ? `${when} · ${extra}` : when;
 }
 
 const styles = StyleSheet.create({
-  item: { paddingVertical: 10, fontSize: 16, color: AppColors.accentBrass, fontWeight: '600' },
+  lead: { color: AppColors.textMuted, fontSize: 14, marginBottom: 4 },
 });

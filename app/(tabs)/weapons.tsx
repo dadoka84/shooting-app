@@ -1,9 +1,16 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
-import { AppColors } from '@/constants/theme';
+import { View } from '@/components/Themed';
+import {
+  Card,
+  EmptyState,
+  ListDivider,
+  ListRow,
+  PrimaryButton,
+  ScreenScroll,
+  SectionHeader,
+  StatusPill,
+} from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listWeapons } from '@/lib/db/repository';
 import type { Weapon } from '@/lib/types';
@@ -24,22 +31,42 @@ export default function WeaponsScreen() {
   return (
     <ScreenScroll>
       <PrimaryButton label="Add weapon" onPress={() => router.push('/weapon/new')} />
-      <FlatList
-        data={weapons}
-        keyExtractor={(item) => item.id}
-        scrollEnabled={false}
-        ListEmptyComponent={<Text>No weapons in library.</Text>}
-        renderItem={({ item }) => (
-          <Text style={styles.item} onPress={() => router.push(`/weapon/${item.id}`)}>
-            {item.name} · {item.category}
-            {item.caliber ? ` · ${item.caliber}` : ''}
-          </Text>
+
+      <SectionHeader title="Arsenal" />
+      <Card>
+        {weapons.length === 0 ? (
+          <EmptyState title="No weapons yet" hint="Add pistols or rifles you own, rent, or borrow." />
+        ) : (
+          weapons.map((item, i) => (
+            <View key={item.id}>
+              <ListRow
+                title={item.name}
+                subtitle={formatWeaponSubtitle(item)}
+                onPress={() => router.push(`/weapon/${item.id}`)}
+                right={<StatusPill label={formatCategory(item.category)} tone="neutral" />}
+              />
+              {i < weapons.length - 1 ? <ListDivider /> : null}
+            </View>
+          ))
         )}
-      />
+      </Card>
     </ScreenScroll>
   );
 }
 
-const styles = StyleSheet.create({
-  item: { paddingVertical: 10, fontSize: 16, color: AppColors.accentBrass, fontWeight: '600' },
-});
+function formatCategory(cat: Weapon['category']): string {
+  const map: Record<Weapon['category'], string> = {
+    pistol: 'Pistol',
+    rifle: 'Rifle',
+    pcc: 'PCC',
+    other: 'Other',
+  };
+  return map[cat];
+}
+
+function formatWeaponSubtitle(w: Weapon): string {
+  const parts = [w.caliber?.trim() || null].filter(Boolean) as string[];
+  const note = w.serial_note?.trim();
+  if (note) parts.push(note);
+  return parts.length ? parts.join(' · ') : 'Tap for details';
+}

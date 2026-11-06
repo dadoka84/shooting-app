@@ -26,6 +26,16 @@ export const AppColors = {
   camoC: '#4f5c42',
   /** Overlays */
   overlayDark: 'rgba(0,0,0,0.5)',
+  /** Semantic UI (status pills, badges) */
+  successMuted: '#2d4a32',
+  successBorder: '#3d6644',
+  successText: '#a3d9ae',
+  warningMuted: '#4a3d28',
+  warningBorder: '#6b5a38',
+  warningText: '#e8d4a8',
+  neutralMuted: '#252b21',
+  neutralBorder: '#2d3528',
+  neutralText: '#b8c4aa',
 } as const;
 
 export type AppColorName = keyof typeof AppColors;

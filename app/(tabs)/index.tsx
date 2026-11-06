@@ -1,9 +1,20 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { AppHeader } from '@/components/theme';
-import { LinkButton, PrimaryButton, ScreenScroll } from '@/components/ui';
+import {
+  Card,
+  EmptyState,
+  LinkButton,
+  ListDivider,
+  ListRow,
+  PrimaryButton,
+  ScreenScroll,
+  SectionHeader,
+  StatusPill,
+  targetStatusDisplay,
+} from '@/components/ui';
 import { UI_BUILD_STAMP } from '@/constants/buildStamp';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
@@ -33,49 +44,80 @@ export default function HomeScreen() {
       <AppHeader subtitle="Phase 1 · offline range log" />
       <Text style={styles.subtitle}>Shooting journal — trips, targets, brass‑ring scoring (mock)</Text>
 
-      <View style={styles.row}>
-        <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
-        <LinkButton href="/(tabs)/trips" label="All trips" />
-      </View>
+      <Card>
+        <View style={styles.quickRow}>
+          <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
+          <LinkButton href="/(tabs)/trips" label="Browse trips" />
+        </View>
+      </Card>
 
-      <Text style={styles.section}>Recent trips</Text>
-      {trips.length === 0 ? (
-        <Text>No trips yet. Log your first range visit.</Text>
-      ) : (
-        <FlatList
-          data={trips}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-          renderItem={({ item }) => (
-            <Text style={styles.listItem} onPress={() => router.push(`/trip/${item.id}`)}>
-              {formatDate(item.started_at)}
-            </Text>
-          )}
-        />
-      )}
+      <SectionHeader title="Recent trips" action={<LinkButton href="/(tabs)/trips" label="See all" />} />
+      <Card>
+        {trips.length === 0 ? (
+          <EmptyState
+            title="No trips yet"
+            hint="Start a trip to log range visits and attach targets."
+          />
+        ) : (
+          trips.map((item, i) => (
+            <View key={item.id}>
+              <ListRow
+                title={formatDateShort(item.started_at)}
+                subtitle="Trip detail, weapons, and targets"
+                onPress={() => router.push(`/trip/${item.id}`)}
+                right={
+                  <StatusPill
+                    label={item.ended_at != null ? 'Completed' : 'In progress'}
+                    tone={item.ended_at != null ? 'success' : 'warning'}
+                  />
+                }
+              />
+              {i < trips.length - 1 ? <ListDivider /> : null}
+            </View>
+          ))
+        )}
+      </Card>
 
-      <Text style={styles.section}>Latest targets</Text>
-      {targets.length === 0 ? (
-        <Text>Add a target photo from a trip to score it.</Text>
-      ) : (
-        <FlatList
-          data={targets}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-          renderItem={({ item }) => (
-            <Text style={styles.listItem} onPress={() => router.push(`/target/${item.id}`)}>
-              {formatDate(item.created_at)}
-              {item.total_score != null ? ` · score ${item.total_score}` : ' · pending'}
-            </Text>
-          )}
-        />
-      )}
+      <SectionHeader title="Latest targets" action={<LinkButton href="/(tabs)/library" label="Library" />} />
+      <Card>
+        {targets.length === 0 ? (
+          <EmptyState
+            title="No targets yet"
+            hint="Add a photo from a trip, then score it on the B‑27 template."
+          />
+        ) : (
+          targets.map((item, i) => {
+            const st = targetStatusDisplay(item.scoring_status, item.total_score);
+            return (
+              <View key={item.id}>
+                <ListRow
+                  title={formatDateShort(item.created_at)}
+                  subtitle={`Template · ${formatTemplate(item.target_template)}`}
+                  onPress={() => router.push(`/target/${item.id}`)}
+                  right={<StatusPill label={st.label} tone={st.tone} />}
+                />
+                {i < targets.length - 1 ? <ListDivider /> : null}
+              </View>
+            );
+          })
+        )}
+      </Card>
     </ScreenScroll>
   );
 }
 
-function formatDate(ms: number): string {
-  return new Date(ms).toLocaleString();
+function formatDateShort(ms: number): string {
+  return new Date(ms).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function formatTemplate(id: string): string {
+  if (id === 'baker_sl_b27e_v1') return 'B‑27 (Baker)';
+  return id.replace(/_/g, ' ');
 }
 
 const styles = StyleSheet.create({
@@ -96,7 +138,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   subtitle: { color: AppColors.textMuted, marginBottom: 8, fontSize: 14 },
-  section: { fontSize: 18, fontWeight: '700', marginTop: 8, color: AppColors.accentBrass },
-  listItem: { paddingVertical: 8, color: AppColors.accentBrass, fontWeight: '600' },
-  row: { gap: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  quickRow: { gap: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', padding: 12 },
 });
