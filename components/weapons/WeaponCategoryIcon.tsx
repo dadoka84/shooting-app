@@ -1,9 +1,9 @@
-import { SymbolView } from 'expo-symbols';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
-import { weaponCategorySymbol } from '@/lib/weapons/categoryDisplay';
 import type { WeaponCategory } from '@/lib/types';
+
+import { WeaponCategoryGlyph } from './WeaponCategoryGlyph';
 
 type WeaponCategoryIconProps = {
   category: WeaponCategory;
@@ -13,11 +13,9 @@ type WeaponCategoryIconProps = {
   bare?: boolean;
 };
 
-/** Brass-ring tile + symbol — shared visual for weapon rows and cards */
+/** Brass-ring tile + weapon silhouette — shared visual for weapon rows and cards */
 export function WeaponCategoryIcon({ category, size = 26, style, bare }: WeaponCategoryIconProps) {
-  const inner = (
-    <SymbolView name={weaponCategorySymbol(category)} tintColor={AppColors.accentBrass} size={size} />
-  );
+  const inner = <WeaponCategoryGlyph category={category} size={size} />;
 
   if (bare) {
     return <View style={[styles.bare, style]}>{inner}</View>;

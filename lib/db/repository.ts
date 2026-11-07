@@ -19,13 +19,23 @@ import {
 } from '@/lib/scoring/mockBakerScore';
 import type { DraftShot } from '@/lib/types';
 import { persistTargetPhoto } from '@/lib/photos';
+import { normalizeWeaponCategory } from '@/lib/weapons/categoryDisplay';
+
+function mapWeaponRow(row: Weapon): Weapon {
+  return {
+    ...row,
+    category: normalizeWeaponCategory(String(row.category)),
+  };
+}
 
 export async function listWeapons(db: SQLiteDatabase): Promise<Weapon[]> {
-  return db.getAllAsync<Weapon>('SELECT * FROM weapons ORDER BY name COLLATE NOCASE');
+  const rows = await db.getAllAsync<Weapon>('SELECT * FROM weapons ORDER BY name COLLATE NOCASE');
+  return rows.map(mapWeaponRow);
 }
 
 export async function getWeapon(db: SQLiteDatabase, id: string): Promise<Weapon | null> {
-  return db.getFirstAsync<Weapon>('SELECT * FROM weapons WHERE id = ?', id);
+  const row = await db.getFirstAsync<Weapon>('SELECT * FROM weapons WHERE id = ?', id);
+  return row ? mapWeaponRow(row) : null;
 }
 
 export async function createWeapon(

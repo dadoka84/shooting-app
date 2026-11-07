@@ -1,4 +1,4 @@
-export type WeaponCategory = 'pistol' | 'rifle' | 'pcc' | 'other';
+export type WeaponCategory = 'pistol' | 'rifle' | 'sniper' | 'other';
 export type Possession = 'owned' | 'rental' | 'borrowed';
 export type ScoringStatus = 'pending' | 'auto' | 'confirmed';
 export type ShotSource = 'auto' | 'manual';

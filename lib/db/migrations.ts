@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DB_NAME = 'shooting.db';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const MIGRATION_V1 = `
 PRAGMA foreign_keys = ON;
@@ -154,6 +154,14 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
         Date.now(),
       );
       await db.execAsync(SEED_TIPS);
+    }
+    if (current < 2) {
+      await db.runAsync("UPDATE weapons SET category = 'sniper' WHERE category = 'pcc'");
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        2,
+        Date.now(),
+      );
     }
     await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
   });
