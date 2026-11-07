@@ -1,9 +1,9 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
 
+import { FloatingPillTabBar } from '@/components/navigation/FloatingPillTabBar';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 import { TabHeaderBackground } from '@/components/theme';
@@ -15,14 +15,9 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useI18n();
-  const insets = useSafeAreaInsets();
-  const tabBottom = TabBarLayout.marginBottom + insets.bottom;
-  const { width: windowWidth } = useWindowDimensions();
-  const tabInset = TabBarLayout.marginHorizontal;
-  const tabBarWidth = Math.max(0, windowWidth - tabInset * 2);
-
   return (
     <Tabs
+      tabBar={(props) => <FloatingPillTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
@@ -31,32 +26,11 @@ export default function TabLayout() {
         tabBarIconStyle: tabBarStyles.icon,
         tabBarStyle: {
           position: 'absolute',
-          left: tabInset,
-          bottom: tabBottom,
-          width: tabBarWidth,
           height: TabBarLayout.height,
-          borderRadius: TabBarLayout.radius,
-          backgroundColor: AppColors.surfaceRaised,
+          backgroundColor: 'transparent',
           borderTopWidth: 0,
-          borderWidth: 1,
-          borderColor: AppColors.border,
-          paddingTop: 0,
-          paddingBottom: 0,
-          overflow: 'hidden',
-          ...Platform.select({
-            ios: {
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.4,
-              shadowRadius: 10,
-            },
-            android: { elevation: 12 },
-            default: {},
-          }),
+          elevation: 0,
         },
-        tabBarBackground: () => (
-          <View style={[tabBarStyles.pillBg, { borderRadius: TabBarLayout.radius }]} />
-        ),
         headerTransparent: false,
         headerShadowVisible: false,
         headerBackground: () => <TabHeaderBackground />,
@@ -147,11 +121,6 @@ function TabBarIconSlot({ children }: { children: ReactNode }) {
 }
 
 const tabBarStyles = StyleSheet.create({
-  pillBg: {
-    flex: 1,
-    backgroundColor: AppColors.surfaceRaised,
-    overflow: 'hidden',
-  },
   item: {
     justifyContent: 'center',
     alignItems: 'center',
