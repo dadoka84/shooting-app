@@ -136,6 +136,6 @@ const tabBarStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     /** Nudge below optical center after hidden label space is removed */
-    paddingTop: 4,
+    paddingTop: 7,
   },
 });
