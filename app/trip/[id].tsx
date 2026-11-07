@@ -1,13 +1,14 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Asset } from 'expo-asset';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { WeaponListRow } from '@/components/weapons/WeaponListRow';
 import {
   ButtonRow,
   Card,
+  ContextBanner,
   DangerButton,
   EmptyState,
   ListDivider,
@@ -20,6 +21,8 @@ import {
 } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { possessionStringKey } from '@/lib/i18n/possession';
 import {
   createTargetFromPhoto,
   deleteTrip,
@@ -30,23 +33,33 @@ import {
   listWeapons,
 } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
-import type { TargetImage, Trip, TripWeapon, Weapon } from '@/lib/types';
 import { isTripCompleted, tripEndedAtMs } from '@/lib/trips/status';
+import type { ScoringStatus, TargetImage, Trip, TripWeapon, Weapon } from '@/lib/types';
 
 export default function TripDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, saved, name: savedName } = useLocalSearchParams<{
+    id: string;
+    saved?: string;
+    name?: string;
+  }>();
   const { db, bumpRefresh, refreshKey } = useDatabase();
+  const { t } = useI18n();
   const router = useRouter();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [locationName, setLocationName] = useState('');
   const [tripWeapons, setTripWeapons] = useState<TripWeapon[]>([]);
   const [weaponMap, setWeaponMap] = useState<Record<string, Weapon>>({});
   const [targets, setTargets] = useState<TargetImage[]>([]);
+  const [showSavedBanner, setShowSavedBanner] = useState(saved === '1');
+
+  useEffect(() => {
+    setShowSavedBanner(saved === '1');
+  }, [saved]);
 
   const load = useCallback(async () => {
     if (!id) return;
-    const t = await getTrip(db, id);
-    setTrip(t);
+    const tripRow = await getTrip(db, id);
+    setTrip(tripRow);
     const loc = await getTripLocation(db, id);
     setLocationName(loc?.display_name ?? '');
     setTripWeapons(await listTripWeapons(db, id));
@@ -63,15 +76,19 @@ export default function TripDetailScreen() {
 
   const addTarget = async (uri: string) => {
     if (!id) return;
-    await createTargetFromPhoto(db, { trip_id: id, sourceUri: uri });
+    const target = await createTargetFromPhoto(db, { trip_id: id, sourceUri: uri });
     bumpRefresh();
-    await load();
+    const tripLabel = locationName.trim() || t('common.unknownRange');
+    router.push({
+      pathname: '/target/[id]',
+      params: { id: target.id, added: '1', tripName: tripLabel },
+    });
   };
 
   const pickCamera = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Camera permission required');
+      Alert.alert(t('target.cameraPerm'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ quality: 0.9 });
@@ -83,7 +100,7 @@ export default function TripDetailScreen() {
   const pickLibrary = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Photo library permission required');
+      Alert.alert(t('target.galleryPerm'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.9 });
@@ -102,10 +119,10 @@ export default function TripDetailScreen() {
 
   const removeTrip = () => {
     if (!trip) return;
-    Alert.alert('Delete trip?', 'Targets and scores will be removed.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('trip.deleteTitle'), t('trip.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteTrip(db, trip.id);
@@ -119,7 +136,7 @@ export default function TripDetailScreen() {
   if (!trip) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
@@ -127,16 +144,27 @@ export default function TripDetailScreen() {
   const started = new Date(trip.started_at).toLocaleString();
   const ended = isTripCompleted(trip) ? new Date(tripEndedAtMs(trip)).toLocaleString() : null;
   const tripRoundsTotal = tripWeapons.reduce((sum, tw) => sum + (tw.rounds_fired ?? 0), 0);
+  const displayName = locationName.trim() || t('common.unknownRange');
 
   return (
     <ScreenScroll>
+      {showSavedBanner ? (
+        <ContextBanner
+          title={t('flow.tripSavedTitle')}
+          body={t('flow.tripSavedBody', { name: savedName?.trim() || displayName })}
+        />
+      ) : null}
+
       <ScreenIntro
-        title={locationName || 'Trip'}
+        title={displayName}
         description={[
+          t('trip.viewingTrip'),
           started,
-          isTripCompleted(trip) && ended ? `Ended ${ended}` : 'In progress',
+          isTripCompleted(trip) && ended
+            ? t('trip.ended', { when: ended })
+            : t('home.inProgress'),
           trip.discipline_tag?.trim(),
-          tripRoundsTotal > 0 ? `${tripRoundsTotal} rounds fired` : null,
+          tripRoundsTotal > 0 ? t('trip.roundsOnTrip', { count: tripRoundsTotal }) : null,
         ]
           .filter(Boolean)
           .join(' · ')}
@@ -145,34 +173,34 @@ export default function TripDetailScreen() {
       {trip.notes?.trim() ? (
         <Card>
           <View style={styles.cardPad}>
-            <Text style={styles.notesLabel}>Notes</Text>
+            <Text style={styles.notesLabel}>{t('common.notes')}</Text>
             <Text style={styles.notesBody}>{trip.notes}</Text>
           </View>
         </Card>
       ) : null}
 
-      <SectionHeader title="Weapons on trip" />
+      <SectionHeader title={t('trip.weaponsOnTrip')} />
       <Card>
         {tripWeapons.length === 0 ? (
-          <EmptyState title="No weapons linked" hint="Edit the trip to add library guns or rental notes." />
+          <EmptyState title={t('trip.noWeapons')} hint={t('trip.noWeaponsHint')} />
         ) : (
           tripWeapons.map((tw, i) => {
             const linked = tw.weapon_id ? weaponMap[tw.weapon_id] : null;
-            const name = linked?.name ?? 'Ad-hoc / unlisted';
+            const weaponName = linked?.name ?? t('trip.adHocWeapon');
             const category = linked?.category ?? 'other';
             const sub = [
-              tw.possession,
+              t(possessionStringKey(tw.possession)),
               tw.rental_note?.trim(),
-              tw.rounds_fired > 0 ? `${tw.rounds_fired} rounds` : null,
+              tw.rounds_fired > 0 ? t('trip.roundsCount', { count: tw.rounds_fired }) : null,
             ]
               .filter(Boolean)
               .join(' · ');
             return (
               <View key={tw.id}>
                 <WeaponListRow
-                  name={name}
+                  name={weaponName}
                   category={category}
-                  subtitle={sub || tw.possession}
+                  subtitle={sub}
                   showChevron={false}
                   showCategoryPill={Boolean(linked)}
                 />
@@ -184,31 +212,33 @@ export default function TripDetailScreen() {
       </Card>
 
       <ButtonRow>
-        <OutlineButton label="Edit trip" fullWidth onPress={() => router.push(`/trip/edit/${trip.id}`)} />
+        <OutlineButton label={t('trip.editTrip')} fullWidth onPress={() => router.push(`/trip/edit/${trip.id}`)} />
       </ButtonRow>
 
-      <SectionHeader title="Add target" />
+      <SectionHeader title={t('trip.addTarget')} />
       <ButtonRow>
-        <PrimaryButton label="Take photo" fullWidth onPress={pickCamera} />
-        <SecondaryButton label="From gallery" fullWidth onPress={pickLibrary} />
-        <OutlineButton label="Use B-27 sample" fullWidth onPress={useReferenceSample} />
+        <PrimaryButton label={t('trip.takePhoto')} fullWidth onPress={pickCamera} />
+        <SecondaryButton label={t('trip.fromGallery')} fullWidth onPress={pickLibrary} />
+        <OutlineButton label={t('trip.useSample')} fullWidth onPress={useReferenceSample} />
       </ButtonRow>
 
-      <SectionHeader title="Targets on this trip" />
+      <SectionHeader title={t('trip.targetsOnTrip')} />
       <Card>
         {targets.length === 0 ? (
-          <EmptyState title="No targets yet" hint="Capture or import a target photo above." />
+          <EmptyState title={t('trip.noTargets')} hint={t('trip.noTargetsHint')} />
         ) : (
           targets.map((item, i) => (
             <View key={item.id}>
               <View style={styles.targetRow}>
                 <Image source={{ uri: resolvePhotoUri(item.file_path) }} style={styles.thumb} />
                 <View style={styles.targetMeta}>
-                  <Text style={styles.targetStatus}>{item.scoring_status}</Text>
-                  <Text style={styles.targetTemplate}>{item.target_template}</Text>
+                  <Text style={styles.targetStatus}>{scoringStatusLabel(item.scoring_status, t)}</Text>
+                  <Text style={styles.targetTemplate}>
+                    {item.target_template === 'baker_sl_b27e_v1' ? t('template.b27') : item.target_template}
+                  </Text>
                   <ButtonRow layout="row">
-                    <OutlineButton label="Details" onPress={() => router.push(`/target/${item.id}`)} />
-                    <SecondaryButton label="Score" onPress={() => router.push(`/target/score/${item.id}`)} />
+                    <OutlineButton label={t('common.details')} onPress={() => router.push(`/target/${item.id}`)} />
+                    <SecondaryButton label={t('common.score')} onPress={() => router.push(`/target/score/${item.id}`)} />
                   </ButtonRow>
                 </View>
               </View>
@@ -218,10 +248,19 @@ export default function TripDetailScreen() {
         )}
       </Card>
 
-      <SectionHeader title="Danger zone" />
-      <DangerButton label="Delete trip" fullWidth onPress={removeTrip} />
+      <SectionHeader title={t('common.dangerZone')} />
+      <DangerButton label={t('common.delete')} fullWidth onPress={removeTrip} />
     </ScreenScroll>
   );
+}
+
+function scoringStatusLabel(
+  status: ScoringStatus,
+  t: ReturnType<typeof useI18n>['t'],
+): string {
+  if (status === 'pending') return t('target.statusPending');
+  if (status === 'confirmed') return t('target.statusConfirmed');
+  return t('target.statusScored');
 }
 
 const styles = StyleSheet.create({

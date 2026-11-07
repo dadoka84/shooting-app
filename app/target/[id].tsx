@@ -5,6 +5,7 @@ import { Text, View } from '@/components/Themed';
 import {
   ButtonRow,
   Card,
+  ContextBanner,
   DangerButton,
   ListDivider,
   ListRow,
@@ -16,13 +17,19 @@ import {
 } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { deleteTarget, getScore, getTarget, listShots } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
 import type { Score, Shot, TargetImage } from '@/lib/types';
 
 export default function TargetDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, added, tripName } = useLocalSearchParams<{
+    id: string;
+    added?: string;
+    tripName?: string;
+  }>();
   const { db, bumpRefresh, refreshKey } = useDatabase();
+  const { t } = useI18n();
   const router = useRouter();
   const [target, setTarget] = useState<TargetImage | null>(null);
   const [score, setScore] = useState<Score | null>(null);
@@ -32,8 +39,8 @@ export default function TargetDetailScreen() {
     useCallback(() => {
       if (!id) return;
       (async () => {
-        const t = await getTarget(db, id);
-        setTarget(t);
+        const row = await getTarget(db, id);
+        setTarget(row);
         setScore(await getScore(db, id));
         setShots(await listShots(db, id));
       })();
@@ -42,10 +49,10 @@ export default function TargetDetailScreen() {
 
   const remove = () => {
     if (!id) return;
-    Alert.alert('Delete target?', 'Shots and score will be removed.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('target.deleteTitle'), t('target.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteTarget(db, id);
@@ -59,24 +66,35 @@ export default function TargetDetailScreen() {
   if (!target) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
 
-  const st = targetStatusDisplay(target.scoring_status, score?.total_score ?? null);
+  const st = targetStatusDisplay(target.scoring_status, score?.total_score ?? null, t);
+  const tripLabel = tripName?.trim() || t('common.unknownRange');
 
   return (
     <ScreenScroll>
+      {added === '1' ? (
+        <ContextBanner
+          tone="info"
+          title={t('flow.targetAddedTitle')}
+          body={`${t('flow.targetAddedBody', { name: tripLabel })} ${t('flow.nextStepScore')}`}
+        />
+      ) : null}
+
       <Card>
         <Image source={{ uri: resolvePhotoUri(target.file_path) }} style={styles.image} />
       </Card>
 
-      <SectionHeader title="Scoring" />
+      <SectionHeader title={t('target.scoring')} />
       <Card>
         <ListRow
-          title="Status"
-          subtitle={target.target_template}
+          title={t('target.status')}
+          subtitle={
+            target.target_template === 'baker_sl_b27e_v1' ? t('template.b27') : target.target_template
+          }
           showChevron={false}
           right={<StatusPill label={st.label} tone={st.tone} />}
         />
@@ -84,40 +102,33 @@ export default function TargetDetailScreen() {
           <>
             <ListDivider />
             <ListRow
-              title={`${score.total_score}${score.max_score != null ? ` / ${score.max_score}` : ''} points`}
-              subtitle={`Algorithm ${score.algorithm_version}`}
+              title={`${score.total_score}${score.max_score != null ? ` / ${score.max_score}` : ''}`}
+              subtitle={score.algorithm_version}
               showChevron={false}
             />
             {score.group_size_mm != null ? (
               <>
                 <ListDivider />
                 <ListRow
-                  title="Group spread"
-                  subtitle={`${score.group_size_mm.toFixed(1)} mm (mock)`}
+                  title={t('target.groupSpread')}
+                  subtitle={`${score.group_size_mm.toFixed(1)} mm`}
                   showChevron={false}
                 />
               </>
             ) : null}
           </>
-        ) : (
-          <>
-            <ListDivider />
-            <View style={styles.cardPad}>
-              <Text style={styles.muted}>No confirmed score yet. Use Score / correct to mark shots.</Text>
-            </View>
-          </>
-        )}
+        ) : null}
       </Card>
 
       {shots.length > 0 ? (
         <>
-          <SectionHeader title="Shots" />
+          <SectionHeader title={t('target.shots')} />
           <Card>
             {shots.map((s, i) => (
               <View key={s.id}>
                 <ListRow
-                  title={`Shot ${s.ordinal + 1}`}
-                  subtitle={`Ring ${s.ring_value} · (${s.x_norm.toFixed(2)}, ${s.y_norm.toFixed(2)})`}
+                  title={`${s.ordinal + 1}`}
+                  subtitle={`${s.ring_value} · (${s.x_norm.toFixed(2)}, ${s.y_norm.toFixed(2)})`}
                   showChevron={false}
                 />
                 {i < shots.length - 1 ? <ListDivider /> : null}
@@ -127,19 +138,21 @@ export default function TargetDetailScreen() {
         </>
       ) : null}
 
-      <SectionHeader title="Actions" />
+      <SectionHeader title={t('weapon.actions')} />
       <ButtonRow>
-        <PrimaryButton label="Score / correct" fullWidth onPress={() => router.push(`/target/score/${target.id}`)} />
+        <PrimaryButton
+          label={t('target.scoreCorrect')}
+          fullWidth
+          onPress={() => router.push(`/target/score/${target.id}`)}
+        />
       </ButtonRow>
 
-      <SectionHeader title="Danger zone" />
-      <DangerButton label="Delete target" fullWidth onPress={remove} />
+      <SectionHeader title={t('common.dangerZone')} />
+      <DangerButton label={t('target.deleteTarget')} fullWidth onPress={remove} />
     </ScreenScroll>
   );
 }
 
 const styles = StyleSheet.create({
   image: { width: '100%', height: 360, borderRadius: 8, backgroundColor: AppColors.surface },
-  cardPad: { padding: 14 },
-  muted: { color: AppColors.textMuted, fontSize: 14, lineHeight: 20 },
 });

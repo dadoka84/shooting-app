@@ -103,7 +103,7 @@ export default function HomeScreen() {
           trips.map((item, i) => (
             <View key={item.id}>
               <ListRow
-                title={tripDisplayName(item)}
+                title={tripDisplayName(item, t)}
                 subtitle={formatDateShort(item.started_at)}
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
@@ -128,7 +128,7 @@ export default function HomeScreen() {
           <EmptyState title={t('home.noTargets')} hint={t('home.noTargetsHint')} />
         ) : (
           targets.map((item, i) => {
-            const st = targetStatusDisplay(item.scoring_status, item.total_score);
+            const st = targetStatusDisplay(item.scoring_status, item.total_score, t);
             return (
               <View key={item.id}>
                 <ListRow
@@ -148,8 +148,8 @@ export default function HomeScreen() {
   );
 }
 
-function tripDisplayName(trip: RecentTripRow): string {
-  return trip.location_name?.trim() || 'Unknown range';
+function tripDisplayName(trip: RecentTripRow, t: ReturnType<typeof useI18n>['t']): string {
+  return trip.location_name?.trim() || t('common.unknownRange');
 }
 
 function formatDateShort(ms: number): string {

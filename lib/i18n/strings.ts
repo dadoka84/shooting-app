@@ -1,4 +1,8 @@
+import { stackBs, stackEn } from '@/lib/i18n/stackCatalog';
+
 export type Locale = 'en' | 'bs' | 'de';
+
+type StackKey = keyof typeof stackEn;
 
 export type StringKey =
   | 'tabs.home'
@@ -80,7 +84,8 @@ export type StringKey =
   | 'maintenance.notifBody'
   | 'maintenance.badge'
   | 'home.maintenanceDue'
-  | 'home.maintenanceRowSub';
+  | 'home.maintenanceRowSub'
+  | StackKey;
 
 type Catalog = Record<StringKey, string>;
 
@@ -166,6 +171,7 @@ const en: Catalog = {
   'maintenance.badge': 'Service due',
   'home.maintenanceDue': 'Maintenance due',
   'home.maintenanceRowSub': '{count} rounds since service — tap to open weapon',
+  ...stackEn,
 };
 
 const bs: Catalog = {
@@ -250,6 +256,7 @@ const bs: Catalog = {
   'maintenance.badge': 'Servis',
   'home.maintenanceDue': 'Održavanje potrebno',
   'home.maintenanceRowSub': '{count} metaka od servisa — dodirni za oružje',
+  ...stackBs,
 };
 
 const de: Catalog = {

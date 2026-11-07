@@ -62,7 +62,7 @@ export default function TripsScreen() {
           rows.map((item, i) => (
             <View key={item.id}>
               <ListRow
-                title={item.location_name ?? 'Unknown range'}
+                title={item.location_name ?? t('common.unknownRange')}
                 subtitle={formatSubtitle(item)}
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={

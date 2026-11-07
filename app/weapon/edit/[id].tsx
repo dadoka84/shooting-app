@@ -5,6 +5,7 @@ import { Text } from '@/components/Themed';
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { WeaponFormFields } from '@/app/weapon/new';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getWeapon, updateWeapon } from '@/lib/db/repository';
 import type { WeaponCategory } from '@/lib/types';
 
@@ -12,6 +13,7 @@ export default function EditWeaponScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { db, bumpRefresh } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<WeaponCategory>('pistol');
   const [caliber, setCaliber] = useState('');
@@ -34,7 +36,7 @@ export default function EditWeaponScreen() {
 
   const save = async () => {
     if (!id || !name.trim()) {
-      Alert.alert('Name required');
+      Alert.alert(t('weapon.nameRequired'));
       return;
     }
     await updateWeapon(db, id, { name, category, caliber, serial_note: serialNote });
@@ -45,14 +47,14 @@ export default function EditWeaponScreen() {
   if (loading) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
 
   return (
     <ScreenScroll>
-      <ScreenIntro title="Edit weapon" description="Update category, caliber, and notes." />
+      <ScreenIntro title={t('weapon.editTitle')} description={t('weapon.editHint')} />
       <WeaponFormFields
           name={name}
           setName={setName}
@@ -63,7 +65,7 @@ export default function EditWeaponScreen() {
           serialNote={serialNote}
           setSerialNote={setSerialNote}
         />
-      <PrimaryButton label="Save changes" fullWidth onPress={save} />
+      <PrimaryButton label={t('common.saveChanges')} fullWidth onPress={save} />
     </ScreenScroll>
   );
 }

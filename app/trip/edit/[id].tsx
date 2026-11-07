@@ -61,7 +61,7 @@ export default function EditTripScreen() {
 
   const save = async () => {
     if (!id || !locationName.trim()) {
-      Alert.alert('Location required');
+      Alert.alert(t('trip.locationRequired'), t('trip.locationRequiredHint'));
       return;
     }
     await updateTrip(db, id, {
@@ -78,27 +78,31 @@ export default function EditTripScreen() {
   if (loading) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
 
   return (
     <ScreenScroll>
-      <ScreenIntro title="Edit trip" description={`Started ${new Date(startedAt).toLocaleString()}`} />
+      <ScreenIntro
+        title={t('trip.editTitle')}
+        description={t('trip.newStarted', { when: new Date(startedAt).toLocaleString() })}
+      />
       <TripFormBody
-          locationName={locationName}
-          setLocationName={setLocationName}
-          notes={notes}
-          setNotes={setNotes}
-          discipline={discipline}
-          setDiscipline={setDiscipline}
-          tripWeapons={tripWeapons}
-          setTripWeapons={setTripWeapons}
-          weapons={weapons}
-          roundsLabels={{ roundsFired: t('common.roundsFired'), custom: t('common.custom') }}
-        />
-      <PrimaryButton label="Save changes" fullWidth onPress={save} />
+        locationName={locationName}
+        setLocationName={setLocationName}
+        notes={notes}
+        setNotes={setNotes}
+        discipline={discipline}
+        setDiscipline={setDiscipline}
+        tripWeapons={tripWeapons}
+        setTripWeapons={setTripWeapons}
+        weapons={weapons}
+        roundsLabels={{ roundsFired: t('common.roundsFired'), custom: t('common.custom') }}
+        translate={t}
+      />
+      <PrimaryButton label={t('common.saveChanges')} fullWidth onPress={save} />
     </ScreenScroll>
   );
 }

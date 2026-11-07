@@ -41,7 +41,7 @@ export default function LibraryScreen() {
           <EmptyState title={t('library.empty')} hint={t('library.emptyHint')} />
         ) : (
           targets.map((item, i) => {
-            const st = targetStatusDisplay(item.scoring_status, item.total_score);
+            const st = targetStatusDisplay(item.scoring_status, item.total_score, t);
             return (
               <View key={item.id}>
                 <ListRow

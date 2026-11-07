@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { deleteWeapon, getWeapon } from '@/lib/db/repository';
 import type { Weapon } from '@/lib/types';
 
@@ -23,6 +24,7 @@ export default function WeaponDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { db, bumpRefresh, refreshKey } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [weapon, setWeapon] = useState<Weapon | null>(null);
 
   useFocusEffect(
@@ -37,16 +39,16 @@ export default function WeaponDetailScreen() {
   if (!weapon) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
 
   const remove = () => {
-    Alert.alert('Delete weapon?', weapon.name, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('weapon.deleteTitle'), weapon.name, [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteWeapon(db, weapon.id);
@@ -69,10 +71,10 @@ export default function WeaponDetailScreen() {
         </View>
       </Card>
 
-      <SectionHeader title="Specifications" />
+      <SectionHeader title={t('weapon.specifications')} />
       <Card>
         <ListRow
-          title="Category"
+          title={t('weapon.category')}
           subtitle={weaponCategoryLabel(weapon.category)}
           leading={<WeaponCategoryIcon category={weapon.category} />}
           showChevron={false}
@@ -80,26 +82,26 @@ export default function WeaponDetailScreen() {
         {weapon.caliber?.trim() ? (
           <>
             <ListDivider />
-            <ListRow title="Caliber" subtitle={weapon.caliber} showChevron={false} />
+            <ListRow title={t('weapon.caliber')} subtitle={weapon.caliber} showChevron={false} />
           </>
         ) : null}
         {weapon.serial_note?.trim() ? (
           <>
             <ListDivider />
-            <ListRow title="Serial / note" subtitle={weapon.serial_note} showChevron={false} />
+            <ListRow title={t('weapon.serialNote')} subtitle={weapon.serial_note} showChevron={false} />
           </>
         ) : null}
       </Card>
 
       <WeaponMaintenanceSection weaponId={weapon.id} />
 
-      <SectionHeader title="Actions" />
+      <SectionHeader title={t('weapon.actions')} />
       <ButtonRow>
-        <PrimaryButton label="Edit weapon" fullWidth onPress={() => router.push(`/weapon/edit/${weapon.id}`)} />
+        <PrimaryButton label={t('weapon.editWeapon')} fullWidth onPress={() => router.push(`/weapon/edit/${weapon.id}`)} />
       </ButtonRow>
 
-      <SectionHeader title="Danger zone" />
-      <DangerButton label="Delete weapon" fullWidth onPress={remove} />
+      <SectionHeader title={t('common.dangerZone')} />
+      <DangerButton label={t('weapon.deleteWeapon')} fullWidth onPress={remove} />
     </ScreenScroll>
   );
 }

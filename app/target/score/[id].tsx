@@ -14,6 +14,7 @@ import {
 } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { confirmTargetScore, getTarget, listShots } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
 import { computeMockScoreFromDraftShots } from '@/lib/scoring/mockBakerScore';
@@ -24,6 +25,7 @@ export default function TargetScoreScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { db, bumpRefresh, refreshKey } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [draftShots, setDraftShots] = useState<DraftShot[]>([]);
   const [confirming, setConfirming] = useState(false);
@@ -62,7 +64,7 @@ export default function TargetScoreScreen() {
       bumpRefresh();
       router.replace(`/target/${id}`);
     } catch (e) {
-      Alert.alert('Could not save score', String(e));
+      Alert.alert(t('target.scoreSaveError'), String(e));
     } finally {
       setConfirming(false);
     }
@@ -81,32 +83,29 @@ export default function TargetScoreScreen() {
   if (!photoUri) {
     return (
       <ScreenScroll>
-        <Text>Loading…</Text>
+        <Text>{t('common.loading')}</Text>
       </ScreenScroll>
     );
   }
 
   return (
     <ScreenScroll>
-      <ScreenIntro
-        title="Score target"
-        description="B‑27 Baker template — tap or drag markers, then confirm to save."
-      />
+      <ScreenIntro title={t('target.scoreScreenTitle')} description={t('target.scoreScreenDesc')} />
       <ShotMarkerEditor imageUri={photoUri} shots={draftShots} onChange={setDraftShots} />
 
-      <SectionHeader title="Preview" />
+      <SectionHeader title={t('target.preview')} />
       <Text style={styles.preview}>
         {preview.total_score} / {preview.max_score} · {draftShots.length} shot{draftShots.length === 1 ? '' : 's'}
       </Text>
 
-      <SectionHeader title="Markers" />
+      <SectionHeader title={t('target.markers')} />
       <ButtonRow layout="row">
-        <SecondaryButton label="Demo cluster" onPress={loadDemoMarkers} />
-        <OutlineButton label="Clear all" onPress={clearAll} />
+        <SecondaryButton label={t('target.demoCluster')} onPress={loadDemoMarkers} />
+        <OutlineButton label={t('target.clearAll')} onPress={clearAll} />
       </ButtonRow>
 
       <PrimaryButton
-        label={confirming ? 'Saving…' : 'Confirm score'}
+        label={confirming ? t('common.saving') : t('target.confirmScore')}
         fullWidth
         onPress={confirm}
         disabled={confirming || draftShots.length === 0}

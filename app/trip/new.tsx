@@ -7,6 +7,8 @@ import { RoundsFiredPicker } from '@/components/RoundsFiredPicker';
 import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
 import { OutlineButton, PrimaryButton, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { possessionStringKey } from '@/lib/i18n/possession';
+import type { StringKey } from '@/lib/i18n/strings';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createTrip, listWeapons } from '@/lib/db/repository';
@@ -36,7 +38,7 @@ export default function NewTripScreen() {
 
   const save = async () => {
     if (!locationName.trim()) {
-      Alert.alert('Location required', 'Enter a range name or location.');
+      Alert.alert(t('trip.locationRequired'), t('trip.locationRequiredHint'));
       return;
     }
     setSaving(true);
@@ -49,7 +51,10 @@ export default function NewTripScreen() {
         weapons: tripWeapons,
       });
       bumpRefresh();
-      router.replace(`/trip/${tripId}`);
+      router.replace({
+        pathname: '/trip/[id]',
+        params: { id: tripId, saved: '1', name: locationName.trim() },
+      });
     } finally {
       setSaving(false);
     }
@@ -58,23 +63,23 @@ export default function NewTripScreen() {
   return (
     <ScreenScroll>
         <ScreenIntro
-          title="New range trip"
-          description={`Started ${new Date(startedAt).toLocaleString()}`}
+          title={t('trip.newTitle')}
+          description={t('trip.newStarted', { when: new Date(startedAt).toLocaleString() })}
         />
-        <LabelField label="Range / location" value={locationName} onChangeText={setLocationName} />
+        <LabelField label={t('trip.locationLabel')} value={locationName} onChangeText={setLocationName} />
         <LabelField
-          label="Discipline tag (optional)"
+          label={t('trip.disciplineLabel')}
           value={discipline}
           onChangeText={setDiscipline}
-          placeholder="precision"
+          placeholder={t('trip.disciplinePlaceholder')}
         />
-        <LabelField label="Notes" value={notes} onChangeText={setNotes} multiline />
+        <LabelField label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
 
-        <SectionHeader title="Weapons on trip" />
+        <SectionHeader title={t('trip.weaponsSection')} />
         {tripWeapons.map((tw, index) => (
           <View key={index} style={styles.weaponRow}>
-            <Text style={styles.rowTitle}>Weapon #{index + 1}</Text>
-            <Text style={styles.label}>Possession</Text>
+            <Text style={styles.rowTitle}>{t('trip.weaponRow', { n: index + 1 })}</Text>
+            <Text style={styles.label}>{t('trip.possession')}</Text>
             <View style={styles.chipRow}>
               {POSSESSIONS.map((p) => (
                 <Text
@@ -82,13 +87,13 @@ export default function NewTripScreen() {
                   style={[styles.chip, tw.possession === p && styles.chipActive]}
                   onPress={() => updateTripWeapon(setTripWeapons, index, { possession: p })}
                 >
-                  {p}
+                  {t(possessionStringKey(p))}
                 </Text>
               ))}
             </View>
-            <Text style={styles.label}>From library</Text>
+            <Text style={styles.label}>{t('trip.fromLibrary')}</Text>
             <Text style={styles.hint} onPress={() => updateTripWeapon(setTripWeapons, index, { weapon_id: null })}>
-              None / ad-hoc
+              {t('trip.adHoc')}
             </Text>
             {weapons.map((w) => (
               <View
@@ -114,14 +119,14 @@ export default function NewTripScreen() {
               labels={{ roundsFired: t('common.roundsFired'), custom: t('common.custom') }}
             />
             <LabelField
-              label="Rental / borrowed note"
+              label={t('trip.rentalNote')}
               value={tw.rental_note ?? ''}
               onChangeText={(v) => updateTripWeapon(setTripWeapons, index, { rental_note: v })}
             />
           </View>
         ))}
         <OutlineButton
-          label="Add another weapon row"
+          label={t('trip.addWeaponRow')}
           fullWidth
           onPress={() =>
             setTripWeapons((rows) => [
@@ -130,7 +135,12 @@ export default function NewTripScreen() {
             ])
           }
         />
-      <PrimaryButton label={saving ? 'Saving…' : 'Save trip'} fullWidth onPress={save} disabled={saving} />
+      <PrimaryButton
+        label={saving ? t('common.saving') : t('common.saveTrip')}
+        fullWidth
+        onPress={save}
+        disabled={saving}
+      />
     </ScreenScroll>
   );
 }
@@ -146,6 +156,7 @@ export function TripFormBody({
   setTripWeapons,
   weapons,
   roundsLabels,
+  translate,
 }: {
   locationName: string;
   setLocationName: (v: string) => void;
@@ -157,16 +168,18 @@ export function TripFormBody({
   setTripWeapons: React.Dispatch<React.SetStateAction<TripWeaponInput[]>>;
   weapons: Weapon[];
   roundsLabels: { roundsFired: string; custom: string };
+  translate: (key: StringKey, vars?: Record<string, string | number>) => string;
 }) {
+  const t = translate;
   return (
     <>
-      <LabelField label="Range / location" value={locationName} onChangeText={setLocationName} />
-      <LabelField label="Discipline tag" value={discipline} onChangeText={setDiscipline} />
-      <LabelField label="Notes" value={notes} onChangeText={setNotes} multiline />
-      <Text style={styles.section}>Weapons on trip</Text>
+      <LabelField label={t('trip.locationLabel')} value={locationName} onChangeText={setLocationName} />
+      <LabelField label={t('trip.disciplineLabel')} value={discipline} onChangeText={setDiscipline} />
+      <LabelField label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
+      <Text style={styles.section}>{t('trip.weaponsSection')}</Text>
       {tripWeapons.map((tw, index) => (
         <View key={index} style={styles.weaponRow}>
-          <Text style={styles.label}>Possession</Text>
+          <Text style={styles.label}>{t('trip.possession')}</Text>
           <View style={styles.chipRow}>
             {POSSESSIONS.map((p) => (
               <Text
@@ -174,7 +187,7 @@ export function TripFormBody({
                 style={[styles.chip, tw.possession === p && styles.chipActive]}
                 onPress={() => updateTripWeapon(setTripWeapons, index, { possession: p })}
               >
-                {p}
+                {t(possessionStringKey(p))}
               </Text>
             ))}
           </View>
@@ -202,7 +215,7 @@ export function TripFormBody({
             labels={roundsLabels}
           />
           <LabelField
-            label="Note"
+            label={t('trip.rentalNote')}
             value={tw.rental_note ?? ''}
             onChangeText={(v) => updateTripWeapon(setTripWeapons, index, { rental_note: v })}
           />

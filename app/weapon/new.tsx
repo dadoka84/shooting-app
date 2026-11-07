@@ -7,12 +7,14 @@ import { WeaponCategoryPicker } from '@/components/weapons/WeaponCategoryPicker'
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { createWeapon } from '@/lib/db/repository';
 import type { WeaponCategory } from '@/lib/types';
 
 export default function NewWeaponScreen() {
   const { db, bumpRefresh } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<WeaponCategory>('pistol');
   const [caliber, setCaliber] = useState('9mm');
@@ -21,7 +23,7 @@ export default function NewWeaponScreen() {
 
   const save = async () => {
     if (!name.trim()) {
-      Alert.alert('Name required', 'Enter a weapon name.');
+      Alert.alert(t('weapon.nameRequired'));
       return;
     }
     setSaving(true);
@@ -41,18 +43,18 @@ export default function NewWeaponScreen() {
 
   return (
     <ScreenScroll>
-      <ScreenIntro title="Add to arsenal" description="Log owned, rented, or borrowed guns for trip linking." />
-      <Field label="Name" value={name} onChangeText={setName} placeholder="Glock 19" />
-      <Text style={styles.label}>Category</Text>
+      <ScreenIntro title={t('weapon.newTitle')} description={t('weapon.newHint')} />
+      <Field label={t('weapon.name')} value={name} onChangeText={setName} placeholder={t('weapon.namePlaceholder')} />
+      <Text style={styles.label}>{t('weapon.category')}</Text>
       <WeaponCategoryPicker value={category} onChange={setCategory} />
-        <Field label="Caliber" value={caliber} onChangeText={setCaliber} placeholder="9mm" />
+        <Field label={t('weapon.caliber')} value={caliber} onChangeText={setCaliber} placeholder={t('weapon.caliberPlaceholder')} />
         <Field
-          label="Serial note (optional)"
+          label={t('weapon.serialNote')}
           value={serialNote}
           onChangeText={setSerialNote}
-          placeholder="Last 4 digits only"
+          placeholder={t('weapon.serialPlaceholder')}
         />
-      <PrimaryButton label={saving ? 'Saving…' : 'Save weapon'} fullWidth onPress={save} disabled={saving} />
+      <PrimaryButton label={saving ? t('common.saving') : t('weapon.saveWeapon')} fullWidth onPress={save} disabled={saving} />
     </ScreenScroll>
   );
 }

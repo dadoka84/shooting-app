@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type Vie
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/constants/theme';
+import type { StringKey } from '@/lib/i18n/strings';
 import type { ScoringStatus } from '@/lib/types';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
@@ -116,6 +117,24 @@ export function ScreenScroll({
 }
 
 /** Short lead copy under the nav title on tab screens */
+export function ContextBanner({
+  title,
+  body,
+  tone = 'success',
+}: {
+  title: string;
+  body?: string;
+  tone?: 'success' | 'info';
+}) {
+  const boxStyle = tone === 'info' ? styles.contextBannerInfo : styles.contextBannerSuccess;
+  return (
+    <View style={[styles.contextBanner, boxStyle]}>
+      <Text style={styles.contextBannerTitle}>{title}</Text>
+      {body ? <Text style={styles.contextBannerBody}>{body}</Text> : null}
+    </View>
+  );
+}
+
 export function ScreenIntro({ description, title }: { description: string; title?: string }) {
   return (
     <View style={styles.intro}>
@@ -276,16 +295,26 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
 export function targetStatusDisplay(
   status: ScoringStatus,
   totalScore: number | null,
+  t?: (key: StringKey, vars?: Record<string, string | number>) => string,
 ): { label: string; tone: StatusTone } {
+  const pending = t?.('target.statusPending') ?? 'Pending';
+  const confirmed = t?.('target.statusConfirmed') ?? 'Confirmed';
+  const scored = t?.('target.statusScored') ?? 'Scored';
   if (status === 'pending') {
-    return { label: 'Pending', tone: 'neutral' };
+    return { label: pending, tone: 'neutral' };
   }
   if (status === 'confirmed') {
-    const pts = totalScore != null ? `${totalScore} pts` : 'Confirmed';
-    return { label: pts, tone: 'success' };
+    const label =
+      totalScore != null
+        ? (t?.('target.statusPts', { pts: totalScore }) ?? `${totalScore} pts`)
+        : confirmed;
+    return { label, tone: 'success' };
   }
-  const pts = totalScore != null ? `${totalScore} pts` : 'Scored';
-  return { label: pts, tone: 'info' };
+  const label =
+    totalScore != null
+      ? (t?.('target.statusPts', { pts: totalScore }) ?? `${totalScore} pts`)
+      : scored;
+  return { label, tone: 'info' };
 }
 
 const styles = StyleSheet.create({
@@ -315,6 +344,31 @@ const styles = StyleSheet.create({
   introDescription: {
     fontSize: 14,
     lineHeight: 20,
+    color: AppColors.textMuted,
+  },
+  contextBanner: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 4,
+    marginBottom: 12,
+  },
+  contextBannerSuccess: {
+    backgroundColor: AppColors.successMuted,
+    borderColor: AppColors.successBorder,
+  },
+  contextBannerInfo: {
+    backgroundColor: 'rgba(184, 165, 114, 0.22)',
+    borderColor: AppColors.accentBrassDim,
+  },
+  contextBannerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: AppColors.textPrimary,
+  },
+  contextBannerBody: {
+    fontSize: 13,
+    lineHeight: 18,
     color: AppColors.textMuted,
   },
   buttonRow: {
