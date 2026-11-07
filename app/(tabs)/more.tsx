@@ -1,11 +1,7 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, ListDivider, ListRow, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
-import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { listStaticTips } from '@/lib/db/repository';
 import type { Locale } from '@/lib/i18n/strings';
 
 const LANG_OPTIONS: { id: Locale; labelKey: 'more.langEn' | 'more.langBs' | 'more.langDe' }[] = [
@@ -15,17 +11,7 @@ const LANG_OPTIONS: { id: Locale; labelKey: 'more.langEn' | 'more.langBs' | 'mor
 ];
 
 export default function MoreScreen() {
-  const { db } = useDatabase();
   const { t, locale, setLocale } = useI18n();
-  const [tips, setTips] = useState<Array<{ id: string; title: string; body: string }>>([]);
-
-  useFocusEffect(
-    useCallback(() => {
-      (async () => {
-        setTips(await listStaticTips(db));
-      })();
-    }, [db]),
-  );
 
   return (
     <ScreenScroll>
@@ -51,16 +37,6 @@ export default function MoreScreen() {
         <ListRow title={t('more.privacyTitle')} subtitle={t('more.privacySub')} showChevron={false} />
         <ListDivider />
         <ListRow title={t('more.unitsTitle')} subtitle={t('more.unitsSub')} showChevron={false} />
-      </Card>
-
-      <SectionHeader title={t('more.fundamentals')} />
-      <Card>
-        {tips.map((item, i) => (
-          <View key={item.id}>
-            <ListRow title={item.title} subtitle={item.body} showChevron={false} />
-            {i < tips.length - 1 ? <ListDivider /> : null}
-          </View>
-        ))}
       </Card>
     </ScreenScroll>
   );

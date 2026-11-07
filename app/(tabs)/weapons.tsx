@@ -7,6 +7,7 @@ import {
   Card,
   EmptyState,
   ListDivider,
+  ListRow,
   PrimaryButton,
   ScreenIntro,
   ScreenScroll,
@@ -16,7 +17,8 @@ import {
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { listMaintenanceDueWeapons } from '@/lib/db/maintenanceRepository';
-import { listWeaponsWithRoundTotals, type WeaponWithRoundTotal } from '@/lib/db/repository';
+import { listStaticTips, listWeaponsWithRoundTotals, type WeaponWithRoundTotal } from '@/lib/db/repository';
+import { localizedTip, sortTipsForDisplay } from '@/lib/i18n/tipDisplay';
 
 export default function WeaponsScreen() {
   const { db, refreshKey } = useDatabase();
@@ -24,6 +26,7 @@ export default function WeaponsScreen() {
   const { t } = useI18n();
   const [weapons, setWeapons] = useState<WeaponWithRoundTotal[]>([]);
   const [dueWeaponIds, setDueWeaponIds] = useState<Set<string>>(new Set());
+  const [tips, setTips] = useState<{ id: string; title: string; body: string }[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -31,6 +34,7 @@ export default function WeaponsScreen() {
         setWeapons(await listWeaponsWithRoundTotals(db));
         const dueRows = await listMaintenanceDueWeapons(db);
         setDueWeaponIds(new Set(dueRows.map((s) => s.weapon_id)));
+        setTips(sortTipsForDisplay(await listStaticTips(db)));
       })();
     }, [db, refreshKey]),
   );
@@ -71,6 +75,19 @@ export default function WeaponsScreen() {
             </View>
           ))
         )}
+      </Card>
+
+      <SectionHeader title={t('weapons.tips')} />
+      <Card>
+        {tips.map((item, i) => {
+          const copy = localizedTip(t, item.id);
+          return (
+            <View key={item.id}>
+              <ListRow title={copy.title} subtitle={copy.body} showChevron={false} />
+              {i < tips.length - 1 ? <ListDivider /> : null}
+            </View>
+          );
+        })}
       </Card>
     </ScreenScroll>
   );

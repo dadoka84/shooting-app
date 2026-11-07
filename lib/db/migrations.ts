@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DB_NAME = 'shooting.db';
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 const MIGRATION_V1 = `
 PRAGMA foreign_keys = ON;
@@ -198,6 +198,18 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       await db.runAsync(
         'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
         5,
+        Date.now(),
+      );
+    }
+    if (current < 6) {
+      await db.execAsync(`
+        INSERT OR IGNORE INTO tips_static (id, discipline_tag, title, body) VALUES
+          ('tip-stance', 'all', 'Stable stance', 'Feet shoulder-width, weight slightly forward. Minimize movement between shots.'),
+          ('tip-breathing', 'all', 'Breath control', 'Exhale halfway, hold briefly on the shot, then resume breathing.');
+      `);
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        6,
         Date.now(),
       );
     }

@@ -1,8 +1,10 @@
 import { stackBs, stackEn } from '@/lib/i18n/stackCatalog';
+import { tipsBs, tipsDe, tipsEn } from '@/lib/i18n/tipsCatalog';
 
 export type Locale = 'en' | 'bs' | 'de';
 
 type StackKey = keyof typeof stackEn;
+type TipKey = keyof typeof tipsEn;
 
 export type StringKey =
   | 'tabs.home'
@@ -47,13 +49,13 @@ export type StringKey =
   | 'weapons.emptyHint'
   | 'weapons.roundsTotal'
   | 'weapons.tapDetails'
+  | 'weapons.tips'
   | 'more.intro'
   | 'more.about'
   | 'more.privacyTitle'
   | 'more.privacySub'
   | 'more.unitsTitle'
   | 'more.unitsSub'
-  | 'more.fundamentals'
   | 'more.language'
   | 'more.langEn'
   | 'more.langBs'
@@ -85,7 +87,8 @@ export type StringKey =
   | 'maintenance.badge'
   | 'home.maintenanceDue'
   | 'home.maintenanceRowSub'
-  | StackKey;
+  | StackKey
+  | TipKey;
 
 type Catalog = Record<StringKey, string>;
 
@@ -132,13 +135,13 @@ const en: Catalog = {
   'weapons.emptyHint': 'Add pistols or rifles you own, rent, or borrow.',
   'weapons.roundsTotal': '{count} rounds logged',
   'weapons.tapDetails': 'Tap for details',
+  'weapons.tips': 'Tips',
   'more.intro': 'Privacy, units, and language.',
   'more.about': 'About this build',
   'more.privacyTitle': 'Privacy',
   'more.privacySub': 'Trips, photos, and scores stay on this device. No cloud sync in Phase 1.',
   'more.unitsTitle': 'Units',
   'more.unitsSub': 'Metric defaults (°C, m/s) — full settings UI comes later.',
-  'more.fundamentals': 'Fundamentals',
   'more.language': 'Language',
   'more.langEn': 'English',
   'more.langBs': 'Bosnian',
@@ -172,6 +175,7 @@ const en: Catalog = {
   'home.maintenanceDue': 'Maintenance due',
   'home.maintenanceRowSub': '{count} rounds since service — tap to open weapon',
   ...stackEn,
+  ...tipsEn,
 };
 
 const bs: Catalog = {
@@ -217,13 +221,13 @@ const bs: Catalog = {
   'weapons.emptyHint': 'Dodajte pištolje ili puške.',
   'weapons.roundsTotal': '{count} metaka zabilježeno',
   'weapons.tapDetails': 'Dodirnite za detalje',
+  'weapons.tips': 'Savjeti',
   'more.intro': 'Privatnost, jedinice i jezik.',
   'more.about': 'O ovoj verziji',
   'more.privacyTitle': 'Privatnost',
   'more.privacySub': 'Izleti, fotografije i rezultati ostaju na uređaju. Nema cloud sinhronizacije.',
   'more.unitsTitle': 'Jedinice',
   'more.unitsSub': 'Metrički zadano (°C, m/s) — puni postavke kasnije.',
-  'more.fundamentals': 'Osnove',
   'more.language': 'Jezik',
   'more.langEn': 'Engleski',
   'more.langBs': 'Bosanski',
@@ -257,6 +261,7 @@ const bs: Catalog = {
   'home.maintenanceDue': 'Održavanje potrebno',
   'home.maintenanceRowSub': '{count} metaka od servisa — dodirni za oružje',
   ...stackBs,
+  ...tipsBs,
 };
 
 const de: Catalog = {
@@ -302,13 +307,13 @@ const de: Catalog = {
   'weapons.emptyHint': 'Pistolen oder Gewehre anlegen.',
   'weapons.roundsTotal': '{count} Schuss protokolliert',
   'weapons.tapDetails': 'Tippen für Details',
+  'weapons.tips': 'Tipps',
   'more.intro': 'Datenschutz, Einheiten und Sprache.',
   'more.about': 'Über diesen Build',
   'more.privacyTitle': 'Datenschutz',
   'more.privacySub': 'Alles bleibt auf dem Gerät. Kein Cloud‑Sync in Phase 1.',
   'more.unitsTitle': 'Einheiten',
   'more.unitsSub': 'Metrisch (°C, m/s) — volle Einstellungen später.',
-  'more.fundamentals': 'Grundlagen',
   'more.language': 'Sprache',
   'more.langEn': 'Englisch',
   'more.langBs': 'Bosnisch',
@@ -341,6 +346,7 @@ const de: Catalog = {
   'maintenance.badge': 'Wartung',
   'home.maintenanceDue': 'Wartung fällig',
   'home.maintenanceRowSub': '{count} Schuss seit Wartung — Tippen für Waffe',
+  ...tipsDe,
 };
 
 export const CATALOG: Record<Locale, Catalog> = { en, bs, de };
