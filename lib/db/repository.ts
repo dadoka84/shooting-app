@@ -104,6 +104,30 @@ export async function listTrips(db: SQLiteDatabase): Promise<Trip[]> {
   return db.getAllAsync<Trip>('SELECT * FROM trips ORDER BY started_at DESC');
 }
 
+export type TripBrowseRow = Trip & {
+  location_name: string | null;
+  rounds_total: number;
+  weapon_ids: string | null;
+};
+
+export async function listTripsForBrowse(db: SQLiteDatabase): Promise<TripBrowseRow[]> {
+  const rows = await db.getAllAsync<TripBrowseRow>(
+    `SELECT t.*,
+            l.display_name AS location_name,
+            COALESCE(SUM(tw.rounds_fired), 0) AS rounds_total,
+            GROUP_CONCAT(DISTINCT tw.weapon_id) AS weapon_ids
+     FROM trips t
+     LEFT JOIN locations l ON l.trip_id = t.id
+     LEFT JOIN trip_weapons tw ON tw.trip_id = t.id
+     GROUP BY t.id
+     ORDER BY t.started_at DESC`,
+  );
+  return rows.map((r) => ({
+    ...r,
+    rounds_total: Number(r.rounds_total ?? 0),
+  }));
+}
+
 export async function getTrip(db: SQLiteDatabase, id: string): Promise<Trip | null> {
   return db.getFirstAsync<Trip>('SELECT * FROM trips WHERE id = ?', id);
 }

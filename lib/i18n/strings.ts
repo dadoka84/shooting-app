@@ -36,6 +36,21 @@ export type StringKey =
   | 'trips.emptyHint'
   | 'trips.done'
   | 'trips.open'
+  | 'trips.viewList'
+  | 'trips.viewCalendar'
+  | 'trips.filterDate'
+  | 'trips.filterAllDates'
+  | 'trips.filterPlace'
+  | 'trips.filterAllPlaces'
+  | 'trips.filterWeapon'
+  | 'trips.filterAllWeapons'
+  | 'trips.sortBy'
+  | 'trips.sortByDate'
+  | 'trips.sortByAmmo'
+  | 'trips.emptyFiltered'
+  | 'trips.clearDateFilter'
+  | 'trips.calendarTripsCount'
+  | 'trips.rowRoundsSub'
   | 'library.intro'
   | 'library.allTargets'
   | 'library.empty'
@@ -132,6 +147,21 @@ const en: Catalog = {
   'trips.emptyHint': 'Create a trip to get started.',
   'trips.done': 'Done',
   'trips.open': 'Open',
+  'trips.viewList': 'List',
+  'trips.viewCalendar': 'Calendar',
+  'trips.filterDate': 'Date',
+  'trips.filterAllDates': 'All dates',
+  'trips.filterPlace': 'Range / place',
+  'trips.filterAllPlaces': 'All places',
+  'trips.filterWeapon': 'Weapon used',
+  'trips.filterAllWeapons': 'All weapons',
+  'trips.sortBy': 'Sort',
+  'trips.sortByDate': 'Newest first',
+  'trips.sortByAmmo': 'Most ammo used',
+  'trips.emptyFiltered': 'No trips match these filters',
+  'trips.clearDateFilter': 'Clear date filter',
+  'trips.calendarTripsCount': '{count} trips',
+  'trips.rowRoundsSub': '{rounds} rounds · {when}',
   'library.intro': 'All target photos saved from trips — open any to score or review.',
   'library.allTargets': 'All targets',
   'library.empty': 'No target photos yet',
@@ -228,6 +258,21 @@ const bs: Catalog = {
   'trips.emptyHint': 'Kreirajte izlet da počnete.',
   'trips.done': 'Završeno',
   'trips.open': 'Otvoreno',
+  'trips.viewList': 'Lista',
+  'trips.viewCalendar': 'Kalendar',
+  'trips.filterDate': 'Datum',
+  'trips.filterAllDates': 'Svi datumi',
+  'trips.filterPlace': 'Streljanje / mjesto',
+  'trips.filterAllPlaces': 'Sva mjesta',
+  'trips.filterWeapon': 'Korišteno oružje',
+  'trips.filterAllWeapons': 'Svo oružje',
+  'trips.sortBy': 'Sortiranje',
+  'trips.sortByDate': 'Najnovije',
+  'trips.sortByAmmo': 'Najviše streljiva',
+  'trips.emptyFiltered': 'Nema izleta za odabrane filtere',
+  'trips.clearDateFilter': 'Poništi filter datuma',
+  'trips.calendarTripsCount': '{count} izleta',
+  'trips.rowRoundsSub': '{rounds} metaka · {when}',
   'library.intro': 'Sve fotografije meta s izleta — otvorite za ocjenu ili pregled.',
   'library.allTargets': 'Sve mete',
   'library.empty': 'Nema fotografija meta',
@@ -324,6 +369,21 @@ const de: Catalog = {
   'trips.emptyHint': 'Legen Sie einen Ausflug an.',
   'trips.done': 'Fertig',
   'trips.open': 'Offen',
+  'trips.viewList': 'Liste',
+  'trips.viewCalendar': 'Kalender',
+  'trips.filterDate': 'Datum',
+  'trips.filterAllDates': 'Alle Daten',
+  'trips.filterPlace': 'Stand / Ort',
+  'trips.filterAllPlaces': 'Alle Orte',
+  'trips.filterWeapon': 'Verwendete Waffe',
+  'trips.filterAllWeapons': 'Alle Waffen',
+  'trips.sortBy': 'Sortierung',
+  'trips.sortByDate': 'Neueste zuerst',
+  'trips.sortByAmmo': 'Meiste Munition',
+  'trips.emptyFiltered': 'Keine Ausflüge für diese Filter',
+  'trips.clearDateFilter': 'Datumsfilter löschen',
+  'trips.calendarTripsCount': '{count} Ausflüge',
+  'trips.rowRoundsSub': '{rounds} Schuss · {when}',
   'library.intro': 'Alle Zielfotos — zum Werten oder Ansehen öffnen.',
   'library.allTargets': 'Alle Ziele',
   'library.empty': 'Keine Zielfotos',
