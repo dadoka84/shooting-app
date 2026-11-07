@@ -28,6 +28,7 @@ import {
   type TargetListRow,
 } from '@/lib/db/repository';
 import type { Trip } from '@/lib/types';
+import { isTripCompleted } from '@/lib/trips/status';
 
 export default function HomeScreen() {
   const { db, refreshKey } = useDatabase();
@@ -78,8 +79,8 @@ export default function HomeScreen() {
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
                   <StatusPill
-                    label={item.ended_at != null ? t('home.completed') : t('home.inProgress')}
-                    tone={item.ended_at != null ? 'success' : 'warning'}
+                    label={isTripCompleted(item) ? t('home.completed') : t('home.inProgress')}
+                    tone={isTripCompleted(item) ? 'success' : 'warning'}
                   />
                 }
               />

@@ -36,8 +36,19 @@ Benchmarked against **Range App**, **ZeroPoint**, **TargetLog**, and **PewPew Li
 2. **M6 — B-27 CV**: template JSON geometry, alignment, hole detect, ring assignment (&lt; 5 s on 12 MP target).
 3. **M7 — Tips**: replace static seed with local tips engine; fundamentals categories.
 4. **M8 — Session polish**: in-progress trip banner, end trip, optional round counts per weapon row.
-5. **M9 — Library filters + calendar**: filter by score status, template, date; month view of trips.
-6. **M10 — Stats + weather**: simple line chart of scores; optional manual weather on trip save.
+5. **M8b — Maintenance schedules** (shipped): per owned weapon, round interval (50/100/150/200/custom), local notifications via `expo-notifications`, “mark service complete” baseline reset.
+6. **M9 — Library filters + calendar**: filter by score status, template, date; month view of trips.
+7. **M10 — Stats + weather**: simple line chart of scores; optional manual weather on trip save.
+
+### M8b maintenance (detail)
+
+| Piece | Behavior |
+|-------|----------|
+| Data | `weapon_maintenance_schedules` keyed by `weapon_id` |
+| Rounds counted | `trip_weapons` where `possession = 'owned'` only |
+| UI | Weapon detail → toggle, interval picker, status, mark complete |
+| Notify | On app refresh / after trips, when `owned_total ≥ baseline + interval` |
+| Permissions | Local notifications; dev build recommended for Android push channel polish |
 
 ## Principles
 

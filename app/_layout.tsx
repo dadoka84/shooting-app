@@ -9,8 +9,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { AppColors } from '@/constants/theme';
+import { MaintenanceSync } from '@/components/MaintenanceSync';
 import { DatabaseProvider } from '@/lib/db/DatabaseProvider';
 import { I18nProvider, useI18n } from '@/lib/i18n/I18nProvider';
+import { configureMaintenanceNotifications } from '@/lib/maintenance/notifications';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -19,6 +21,7 @@ export const unstable_settings = {
 };
 
 SplashScreen.preventAutoHideAsync();
+configureMaintenanceNotifications();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -44,6 +47,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <I18nProvider>
           <DatabaseProvider>
+            <MaintenanceSync />
             <RootLayoutNav />
           </DatabaseProvider>
         </I18nProvider>

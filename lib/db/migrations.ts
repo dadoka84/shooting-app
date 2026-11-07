@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DB_NAME = 'shooting.db';
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 const MIGRATION_V1 = `
 PRAGMA foreign_keys = ON;
@@ -141,10 +141,7 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   const current = row?.user_version ?? 0;
 
-  if (current >= SCHEMA_VERSION) {
-    return;
-  }
-
+  if (current < SCHEMA_VERSION) {
   await db.withTransactionAsync(async () => {
     if (current < 1) {
       await db.execAsync(MIGRATION_V1);
@@ -187,6 +184,28 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
         Date.now(),
       );
     }
+    if (current < 5) {
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS weapon_maintenance_schedules (
+          weapon_id TEXT PRIMARY KEY NOT NULL REFERENCES weapons(id) ON DELETE CASCADE,
+          enabled INTEGER NOT NULL DEFAULT 0,
+          interval_rounds INTEGER NOT NULL DEFAULT 100,
+          baseline_rounds INTEGER NOT NULL DEFAULT 0,
+          alerted_through_rounds INTEGER NOT NULL DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        );
+      `);
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        5,
+        Date.now(),
+      );
+    }
     await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
   });
+  }
+
+  await db.runAsync(
+    `UPDATE trips SET ended_at = COALESCE(ended_at, started_at) WHERE ended_at IS NULL`,
+  );
 }

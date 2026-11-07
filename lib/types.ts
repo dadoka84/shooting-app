@@ -95,3 +95,15 @@ export interface TripWeaponInput {
   rental_note: string | null;
   rounds_fired: number;
 }
+
+/** Round-based cleaning/service reminder for owned weapons only. */
+export interface WeaponMaintenanceSchedule {
+  weapon_id: string;
+  enabled: number;
+  interval_rounds: number;
+  /** Owned-possession round count at last completed service. */
+  baseline_rounds: number;
+  /** Highest round total we already notified for this service cycle. */
+  alerted_through_rounds: number;
+  updated_at: number;
+}

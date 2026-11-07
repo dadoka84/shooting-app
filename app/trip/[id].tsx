@@ -31,6 +31,7 @@ import {
 } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
 import type { TargetImage, Trip, TripWeapon, Weapon } from '@/lib/types';
+import { isTripCompleted, tripEndedAtMs } from '@/lib/trips/status';
 
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -124,7 +125,7 @@ export default function TripDetailScreen() {
   }
 
   const started = new Date(trip.started_at).toLocaleString();
-  const ended = trip.ended_at != null ? new Date(trip.ended_at).toLocaleString() : null;
+  const ended = isTripCompleted(trip) ? new Date(tripEndedAtMs(trip)).toLocaleString() : null;
   const tripRoundsTotal = tripWeapons.reduce((sum, tw) => sum + (tw.rounds_fired ?? 0), 0);
 
   return (
@@ -133,7 +134,7 @@ export default function TripDetailScreen() {
         title={locationName || 'Trip'}
         description={[
           started,
-          ended ? `Ended ${ended}` : 'In progress',
+          isTripCompleted(trip) && ended ? `Ended ${ended}` : 'In progress',
           trip.discipline_tag?.trim(),
           tripRoundsTotal > 0 ? `${tripRoundsTotal} rounds fired` : null,
         ]

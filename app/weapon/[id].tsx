@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import { WeaponMaintenanceSection } from '@/components/WeaponMaintenanceSection';
 import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
 import { weaponCategoryLabel } from '@/lib/weapons/categoryDisplay';
 import {
@@ -89,6 +90,8 @@ export default function WeaponDetailScreen() {
           </>
         ) : null}
       </Card>
+
+      <WeaponMaintenanceSection weaponId={weapon.id} />
 
       <SectionHeader title="Actions" />
       <ButtonRow>

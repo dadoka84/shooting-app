@@ -17,6 +17,7 @@ import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getTripLocation, listTrips } from '@/lib/db/repository';
 import type { Trip } from '@/lib/types';
+import { isTripCompleted } from '@/lib/trips/status';
 
 type TripRow = Trip & { location_name?: string };
 
@@ -66,8 +67,8 @@ export default function TripsScreen() {
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
                   <StatusPill
-                    label={item.ended_at != null ? t('trips.done') : t('trips.open')}
-                    tone={item.ended_at != null ? 'success' : 'warning'}
+                    label={isTripCompleted(item) ? t('trips.done') : t('trips.open')}
+                    tone={isTripCompleted(item) ? 'success' : 'warning'}
                   />
                 }
               />

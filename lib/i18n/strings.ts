@@ -66,7 +66,18 @@ export type StringKey =
   | 'stack.editWeapon'
   | 'stack.target'
   | 'stack.scoreTarget'
-  | 'template.b27';
+  | 'template.b27'
+  | 'maintenance.sectionTitle'
+  | 'maintenance.intro'
+  | 'maintenance.enable'
+  | 'maintenance.interval'
+  | 'maintenance.markDone'
+  | 'maintenance.due'
+  | 'maintenance.untilDue'
+  | 'maintenance.ownedRounds'
+  | 'maintenance.listDue'
+  | 'maintenance.notifTitle'
+  | 'maintenance.notifBody';
 
 type Catalog = Record<StringKey, string>;
 
@@ -137,6 +148,18 @@ const en: Catalog = {
   'stack.target': 'Target',
   'stack.scoreTarget': 'Score target',
   'template.b27': 'B‑27 (Baker)',
+  'maintenance.sectionTitle': 'Maintenance schedule',
+  'maintenance.intro':
+    'Reminders for owned weapons based on rounds fired (posjed). Rental/borrowed rounds do not count.',
+  'maintenance.enable': 'Enable reminders',
+  'maintenance.interval': 'Service every (rounds)',
+  'maintenance.markDone': 'Mark service complete',
+  'maintenance.due': 'Service due now',
+  'maintenance.untilDue': '{count} rounds until service',
+  'maintenance.ownedRounds': 'Owned rounds logged: {count}',
+  'maintenance.listDue': 'Maintenance due',
+  'maintenance.notifTitle': 'Weapon maintenance',
+  'maintenance.notifBody': '{name}: {rounds} rounds since last service',
 };
 
 const bs: Catalog = {
@@ -206,6 +229,18 @@ const bs: Catalog = {
   'stack.target': 'Meta',
   'stack.scoreTarget': 'Ocijeni metu',
   'template.b27': 'B‑27 (Baker)',
+  'maintenance.sectionTitle': 'Raspored održavanja',
+  'maintenance.intro':
+    'Podsjetnici za oružje u posjedu prema broju ispucanih metaka. Iznajmljeno/posuđeno se ne računa.',
+  'maintenance.enable': 'Uključi podsjetnike',
+  'maintenance.interval': 'Servis svakih (metaka)',
+  'maintenance.markDone': 'Označi servis obavljen',
+  'maintenance.due': 'Potrebno održavanje',
+  'maintenance.untilDue': 'Još {count} metaka do servisa',
+  'maintenance.ownedRounds': 'Metaka u posjedu: {count}',
+  'maintenance.listDue': 'Održavanje potrebno',
+  'maintenance.notifTitle': 'Održavanje oružja',
+  'maintenance.notifBody': '{name}: {rounds} metaka od zadnjeg servisa',
 };
 
 const de: Catalog = {
@@ -275,6 +310,18 @@ const de: Catalog = {
   'stack.target': 'Ziel',
   'stack.scoreTarget': 'Ziel werten',
   'template.b27': 'B‑27 (Baker)',
+  'maintenance.sectionTitle': 'Wartungsplan',
+  'maintenance.intro':
+    'Erinnerungen für eigene Waffen nach Schusszahl. Miete/Leihe zählt nicht.',
+  'maintenance.enable': 'Erinnerungen aktivieren',
+  'maintenance.interval': 'Wartung alle (Schuss)',
+  'maintenance.markDone': 'Wartung erledigt',
+  'maintenance.due': 'Wartung fällig',
+  'maintenance.untilDue': 'Noch {count} Schuss bis Wartung',
+  'maintenance.ownedRounds': 'Eigene Schuss: {count}',
+  'maintenance.listDue': 'Wartung fällig',
+  'maintenance.notifTitle': 'Waffenwartung',
+  'maintenance.notifBody': '{name}: {rounds} Schuss seit letzter Wartung',
 };
 
 export const CATALOG: Record<Locale, Catalog> = { en, bs, de };
