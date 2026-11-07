@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
@@ -17,6 +17,9 @@ export default function TabLayout() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const tabBottom = TabBarLayout.marginBottom + insets.bottom;
+  const { width: windowWidth } = useWindowDimensions();
+  const tabInset = TabBarLayout.marginHorizontal;
+  const tabBarWidth = Math.max(0, windowWidth - tabInset * 2);
 
   return (
     <Tabs
@@ -28,9 +31,9 @@ export default function TabLayout() {
         tabBarIconStyle: tabBarStyles.icon,
         tabBarStyle: {
           position: 'absolute',
-          left: TabBarLayout.marginHorizontal,
-          right: TabBarLayout.marginHorizontal,
+          left: tabInset,
           bottom: tabBottom,
+          width: tabBarWidth,
           height: TabBarLayout.height,
           borderRadius: TabBarLayout.radius,
           backgroundColor: AppColors.surfaceRaised,
@@ -39,6 +42,7 @@ export default function TabLayout() {
           borderColor: AppColors.border,
           paddingTop: 0,
           paddingBottom: 0,
+          overflow: 'hidden',
           ...Platform.select({
             ios: {
               shadowColor: '#000',
