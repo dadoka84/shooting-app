@@ -1,5 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -23,6 +24,8 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
         tabBarShowLabel: false,
+        tabBarItemStyle: tabBarStyles.item,
+        tabBarIconStyle: tabBarStyles.icon,
         tabBarStyle: {
           position: 'absolute',
           left: TabBarLayout.marginHorizontal,
@@ -35,6 +38,7 @@ export default function TabLayout() {
           borderWidth: 1,
           borderColor: AppColors.border,
           paddingTop: 0,
+          paddingBottom: 0,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
@@ -72,7 +76,9 @@ export default function TabLayout() {
         options={{
           title: t('tabs.home'),
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} tintColor={color} size={26} />
+            <TabBarIconSlot>
+              <SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} tintColor={color} size={26} />
+            </TabBarIconSlot>
           ),
         }}
       />
@@ -81,7 +87,9 @@ export default function TabLayout() {
         options={{
           title: t('tabs.trips'),
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: 'map', android: 'map', web: 'map' }} tintColor={color} size={26} />
+            <TabBarIconSlot>
+              <SymbolView name={{ ios: 'map', android: 'map', web: 'map' }} tintColor={color} size={26} />
+            </TabBarIconSlot>
           ),
         }}
       />
@@ -90,11 +98,13 @@ export default function TabLayout() {
         options={{
           title: t('tabs.library'),
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'photo.on.rectangle', android: 'photo_library', web: 'photo_library' }}
-              tintColor={color}
-              size={26}
-            />
+            <TabBarIconSlot>
+              <SymbolView
+                name={{ ios: 'photo.on.rectangle', android: 'photo_library', web: 'photo_library' }}
+                tintColor={color}
+                size={26}
+              />
+            </TabBarIconSlot>
           ),
         }}
       />
@@ -103,7 +113,9 @@ export default function TabLayout() {
         options={{
           title: t('tabs.weapons'),
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: 'scope', android: 'gps_fixed', web: 'gps_fixed' }} tintColor={color} size={26} />
+            <TabBarIconSlot>
+              <SymbolView name={{ ios: 'scope', android: 'gps_fixed', web: 'gps_fixed' }} tintColor={color} size={26} />
+            </TabBarIconSlot>
           ),
         }}
       />
@@ -112,11 +124,13 @@ export default function TabLayout() {
         options={{
           title: t('tabs.more'),
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'ellipsis.circle', android: 'more_horiz', web: 'more_horiz' }}
-              tintColor={color}
-              size={26}
-            />
+            <TabBarIconSlot>
+              <SymbolView
+                name={{ ios: 'ellipsis.circle', android: 'more_horiz', web: 'more_horiz' }}
+                tintColor={color}
+                size={26}
+              />
+            </TabBarIconSlot>
           ),
         }}
       />
@@ -124,10 +138,31 @@ export default function TabLayout() {
   );
 }
 
+function TabBarIconSlot({ children }: { children: ReactNode }) {
+  return <View style={tabBarStyles.iconSlot}>{children}</View>;
+}
+
 const tabBarStyles = StyleSheet.create({
   pillBg: {
     flex: 1,
     backgroundColor: AppColors.surfaceRaised,
     overflow: 'hidden',
+  },
+  item: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 0,
+    padding: 0,
+  },
+  icon: {
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  iconSlot: {
+    height: TabBarLayout.height,
+    justifyContent: 'center',
+    alignItems: 'center',
+    /** Nudge below optical center after hidden label space is removed */
+    paddingTop: 4,
   },
 });

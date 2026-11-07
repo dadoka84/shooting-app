@@ -41,7 +41,7 @@ export const AppColors = {
 /** Floating pill tab bar (see app/(tabs)/_layout.tsx) */
 export const TabBarLayout = {
   marginBottom: 8,
-  marginHorizontal: 5,
+  marginHorizontal: 10,
   height: 50,
   radius: 25,
   /** Scroll content clearance above the pill */
