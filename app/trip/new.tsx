@@ -11,6 +11,7 @@ import { possessionStringKey } from '@/lib/i18n/possession';
 import type { StringKey } from '@/lib/i18n/strings';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { TripAmmoInsufficientError } from '@/lib/db/ammoRepository';
 import { createTrip, listWeapons } from '@/lib/db/repository';
 import type { Possession, TripWeaponInput, Weapon } from '@/lib/types';
 
@@ -55,6 +56,15 @@ export default function NewTripScreen() {
         pathname: '/trip/[id]',
         params: { id: tripId, saved: '1', name: locationName.trim() },
       });
+    } catch (e) {
+      if (e instanceof TripAmmoInsufficientError) {
+        Alert.alert(
+          t('trip.ammoInsufficientTitle'),
+          t('trip.ammoInsufficientBody', { caliber: e.caliber, requested: e.requested, available: e.available }),
+        );
+      } else {
+        throw e;
+      }
     } finally {
       setSaving(false);
     }
@@ -76,6 +86,7 @@ export default function NewTripScreen() {
         <LabelField label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
 
         <SectionHeader title={t('trip.weaponsSection')} />
+        <Text style={styles.hint}>{t('trip.ammoDeductHint')}</Text>
         {tripWeapons.map((tw, index) => (
           <View key={index} style={styles.weaponRow}>
             <Text style={styles.rowTitle}>{t('trip.weaponRow', { n: index + 1 })}</Text>
@@ -177,6 +188,7 @@ export function TripFormBody({
       <LabelField label={t('trip.disciplineLabel')} value={discipline} onChangeText={setDiscipline} />
       <LabelField label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
       <Text style={styles.section}>{t('trip.weaponsSection')}</Text>
+      <Text style={styles.hint}>{t('trip.ammoDeductHint')}</Text>
       {tripWeapons.map((tw, index) => (
         <View key={index} style={styles.weaponRow}>
           <Text style={styles.label}>{t('trip.possession')}</Text>

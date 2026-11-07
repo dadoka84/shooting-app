@@ -6,6 +6,7 @@ import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { TripFormBody } from '@/app/trip/new';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { TripAmmoInsufficientError } from '@/lib/db/ammoRepository';
 import {
   getTrip,
   getTripLocation,
@@ -64,15 +65,26 @@ export default function EditTripScreen() {
       Alert.alert(t('trip.locationRequired'), t('trip.locationRequiredHint'));
       return;
     }
-    await updateTrip(db, id, {
-      started_at: startedAt,
-      location_name: locationName,
-      notes,
-      discipline_tag: discipline || null,
-      weapons: tripWeapons,
-    });
-    bumpRefresh();
-    router.back();
+    try {
+      await updateTrip(db, id, {
+        started_at: startedAt,
+        location_name: locationName,
+        notes,
+        discipline_tag: discipline || null,
+        weapons: tripWeapons,
+      });
+      bumpRefresh();
+      router.back();
+    } catch (e) {
+      if (e instanceof TripAmmoInsufficientError) {
+        Alert.alert(
+          t('trip.ammoInsufficientTitle'),
+          t('trip.ammoInsufficientBody', { caliber: e.caliber, requested: e.requested, available: e.available }),
+        );
+      } else {
+        throw e;
+      }
+    }
   };
 
   if (loading) {

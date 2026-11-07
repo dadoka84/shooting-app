@@ -12,6 +12,7 @@ import {
   DangerButton,
   EmptyState,
   ListDivider,
+  ListRow,
   OutlineButton,
   PrimaryButton,
   ScreenIntro,
@@ -23,6 +24,7 @@ import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { possessionStringKey } from '@/lib/i18n/possession';
+import { listTripAmmoDeductions, type TripAmmoDeduction } from '@/lib/db/ammoRepository';
 import {
   createTargetFromPhoto,
   deleteTrip,
@@ -50,6 +52,7 @@ export default function TripDetailScreen() {
   const [tripWeapons, setTripWeapons] = useState<TripWeapon[]>([]);
   const [weaponMap, setWeaponMap] = useState<Record<string, Weapon>>({});
   const [targets, setTargets] = useState<TargetImage[]>([]);
+  const [ammoFromBox, setAmmoFromBox] = useState<TripAmmoDeduction[]>([]);
   const [showSavedBanner, setShowSavedBanner] = useState(saved === '1');
 
   useEffect(() => {
@@ -64,6 +67,7 @@ export default function TripDetailScreen() {
     setLocationName(loc?.display_name ?? '');
     setTripWeapons(await listTripWeapons(db, id));
     setTargets(await listTargetsForTrip(db, id));
+    setAmmoFromBox(await listTripAmmoDeductions(db, id));
     const weapons = await listWeapons(db);
     setWeaponMap(Object.fromEntries(weapons.map((w) => [w.id, w])));
   }, [db, id]);
@@ -210,6 +214,24 @@ export default function TripDetailScreen() {
           })
         )}
       </Card>
+
+      {ammoFromBox.length > 0 ? (
+        <>
+          <SectionHeader title={t('trip.ammoFromBox')} />
+          <Card>
+            {ammoFromBox.map((row, i) => (
+              <View key={row.caliber}>
+                <ListRow
+                  title={row.caliber}
+                  subtitle={t('weapons.ammoRowSub', { count: row.rounds })}
+                  showChevron={false}
+                />
+                {i < ammoFromBox.length - 1 ? <ListDivider /> : null}
+              </View>
+            ))}
+          </Card>
+        </>
+      ) : null}
 
       <ButtonRow>
         <OutlineButton label={t('trip.editTrip')} fullWidth onPress={() => router.push(`/trip/edit/${trip.id}`)} />

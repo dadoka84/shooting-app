@@ -50,6 +50,16 @@ export type StringKey =
   | 'weapons.roundsTotal'
   | 'weapons.tapDetails'
   | 'weapons.tips'
+  | 'weapons.ammoSection'
+  | 'weapons.ammoIntro'
+  | 'weapons.ammoTotal'
+  | 'weapons.ammoEmpty'
+  | 'weapons.ammoEmptyHint'
+  | 'weapons.ammoAdd'
+  | 'weapons.ammoReduce'
+  | 'weapons.ammoRowSub'
+  | 'stack.addAmmo'
+  | 'stack.reduceAmmo'
   | 'more.intro'
   | 'more.about'
   | 'more.privacyTitle'
@@ -136,6 +146,16 @@ const en: Catalog = {
   'weapons.roundsTotal': '{count} rounds logged',
   'weapons.tapDetails': 'Tap for details',
   'weapons.tips': 'Tips',
+  'weapons.ammoSection': 'Ammunition box',
+  'weapons.ammoIntro': 'Track on-hand stock by caliber.',
+  'weapons.ammoTotal': 'Total on hand: {count} rounds',
+  'weapons.ammoEmpty': 'No ammo logged',
+  'weapons.ammoEmptyHint': 'Add stock to track what you have at home.',
+  'weapons.ammoAdd': 'Add stock',
+  'weapons.ammoReduce': 'Reduce quantity',
+  'weapons.ammoRowSub': '{count} rounds',
+  'stack.addAmmo': 'Add ammo',
+  'stack.reduceAmmo': 'Reduce ammo',
   'more.intro': 'Privacy, units, and language.',
   'more.about': 'About this build',
   'more.privacyTitle': 'Privacy',
@@ -222,6 +242,16 @@ const bs: Catalog = {
   'weapons.roundsTotal': '{count} metaka zabilježeno',
   'weapons.tapDetails': 'Dodirnite za detalje',
   'weapons.tips': 'Savjeti',
+  'weapons.ammoSection': 'Kutija streljiva',
+  'weapons.ammoIntro': 'Pratite zalihe po kalibru.',
+  'weapons.ammoTotal': 'Ukupno: {count} metaka',
+  'weapons.ammoEmpty': 'Nema unesenog streljiva',
+  'weapons.ammoEmptyHint': 'Dodajte zalihe koje imate kod kuće.',
+  'weapons.ammoAdd': 'Dodaj zalihe',
+  'weapons.ammoReduce': 'Smanji količinu',
+  'weapons.ammoRowSub': '{count} metaka',
+  'stack.addAmmo': 'Dodaj streljivo',
+  'stack.reduceAmmo': 'Smanji zalihe',
   'more.intro': 'Privatnost, jedinice i jezik.',
   'more.about': 'O ovoj verziji',
   'more.privacyTitle': 'Privatnost',
@@ -308,6 +338,16 @@ const de: Catalog = {
   'weapons.roundsTotal': '{count} Schuss protokolliert',
   'weapons.tapDetails': 'Tippen für Details',
   'weapons.tips': 'Tipps',
+  'weapons.ammoSection': 'Munitionskiste',
+  'weapons.ammoIntro': 'Bestand nach Kaliber.',
+  'weapons.ammoTotal': 'Gesamt: {count} Patronen',
+  'weapons.ammoEmpty': 'Keine Munition erfasst',
+  'weapons.ammoEmptyHint': 'Bestand anlegen.',
+  'weapons.ammoAdd': 'Bestand hinzufügen',
+  'weapons.ammoReduce': 'Menge reduzieren',
+  'weapons.ammoRowSub': '{count} Patronen',
+  'stack.addAmmo': 'Munition hinzufügen',
+  'stack.reduceAmmo': 'Menge reduzieren',
   'more.intro': 'Datenschutz, Einheiten und Sprache.',
   'more.about': 'Über diesen Build',
   'more.privacyTitle': 'Datenschutz',

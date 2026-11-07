@@ -1,7 +1,9 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
+import { canonicalCaliberLabel } from '@/lib/ammo/caliberMatch';
+
 export const DB_NAME = 'shooting.db';
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 9;
 
 const MIGRATION_V1 = `
 PRAGMA foreign_keys = ON;
@@ -210,6 +212,81 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       await db.runAsync(
         'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
         6,
+        Date.now(),
+      );
+    }
+    if (current < 7) {
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS ammo_lots (
+          id TEXT PRIMARY KEY NOT NULL,
+          caliber TEXT NOT NULL,
+          ammo_type TEXT NOT NULL,
+          manufacturer TEXT NOT NULL,
+          quantity_initial INTEGER NOT NULL,
+          quantity_remaining INTEGER NOT NULL,
+          purchased_at INTEGER,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_ammo_lots_caliber ON ammo_lots(caliber);
+      `);
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        7,
+        Date.now(),
+      );
+    }
+    if (current < 8) {
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS trip_ammo_deductions (
+          trip_id TEXT NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+          caliber TEXT NOT NULL,
+          rounds INTEGER NOT NULL,
+          PRIMARY KEY (trip_id, caliber)
+        );
+      `);
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        8,
+        Date.now(),
+      );
+    }
+    if (current < 9) {
+      const weapons = await db.getAllAsync<{ id: string; caliber: string }>(
+        `SELECT id, caliber FROM weapons WHERE caliber IS NOT NULL AND TRIM(caliber) != ''`,
+      );
+      for (const row of weapons) {
+        const next = canonicalCaliberLabel(row.caliber);
+        if (next !== row.caliber) {
+          await db.runAsync('UPDATE weapons SET caliber = ? WHERE id = ?', next, row.id);
+        }
+      }
+      const lots = await db.getAllAsync<{ id: string; caliber: string }>(`SELECT id, caliber FROM ammo_lots`);
+      for (const row of lots) {
+        const next = canonicalCaliberLabel(row.caliber);
+        if (next !== row.caliber) {
+          await db.runAsync('UPDATE ammo_lots SET caliber = ? WHERE id = ?', next, row.id);
+        }
+      }
+      const deductions = await db.getAllAsync<{
+        trip_id: string;
+        caliber: string;
+        rounds: number;
+      }>(`SELECT trip_id, caliber, rounds FROM trip_ammo_deductions`);
+      for (const row of deductions) {
+        const next = canonicalCaliberLabel(row.caliber);
+        if (next !== row.caliber) {
+          await db.runAsync(
+            'UPDATE trip_ammo_deductions SET caliber = ? WHERE trip_id = ? AND caliber = ?',
+            next,
+            row.trip_id,
+            row.caliber,
+          );
+        }
+      }
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        9,
         Date.now(),
       );
     }

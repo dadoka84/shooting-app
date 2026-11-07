@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { WeaponListRow } from '@/components/weapons/WeaponListRow';
 import {
   ButtonRow,
@@ -12,12 +12,16 @@ import {
   ScreenIntro,
   ScreenScroll,
   SectionHeader,
+  SecondaryButton,
   StatusPill,
 } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getAmmoTotalQuantity, listAmmoByCaliber } from '@/lib/db/ammoRepository';
 import { listMaintenanceDueWeapons } from '@/lib/db/maintenanceRepository';
 import { listStaticTips, listWeaponsWithRoundTotals, type WeaponWithRoundTotal } from '@/lib/db/repository';
+import type { AmmoCaliberSummary } from '@/lib/types';
 import { localizedTip, sortTipsForDisplay } from '@/lib/i18n/tipDisplay';
 
 export default function WeaponsScreen() {
@@ -27,6 +31,8 @@ export default function WeaponsScreen() {
   const [weapons, setWeapons] = useState<WeaponWithRoundTotal[]>([]);
   const [dueWeaponIds, setDueWeaponIds] = useState<Set<string>>(new Set());
   const [tips, setTips] = useState<{ id: string; title: string; body: string }[]>([]);
+  const [ammoTotal, setAmmoTotal] = useState(0);
+  const [ammoByCaliber, setAmmoByCaliber] = useState<AmmoCaliberSummary[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,6 +41,8 @@ export default function WeaponsScreen() {
         const dueRows = await listMaintenanceDueWeapons(db);
         setDueWeaponIds(new Set(dueRows.map((s) => s.weapon_id)));
         setTips(sortTipsForDisplay(await listStaticTips(db)));
+        setAmmoTotal(await getAmmoTotalQuantity(db));
+        setAmmoByCaliber(await listAmmoByCaliber(db));
       })();
     }, [db, refreshKey]),
   );
@@ -77,6 +85,36 @@ export default function WeaponsScreen() {
         )}
       </Card>
 
+      <SectionHeader title={t('weapons.ammoSection')} />
+      <Card>
+        <View style={styles.ctaPad}>
+          <Text style={styles.ammoTotal}>{t('weapons.ammoTotal', { count: ammoTotal })}</Text>
+          <Text style={styles.ammoIntro}>{t('weapons.ammoIntro')}</Text>
+          <ButtonRow>
+            <View style={styles.halfBtn}>
+              <PrimaryButton label={t('weapons.ammoAdd')} fullWidth onPress={() => router.push('/ammo/add')} />
+            </View>
+            <View style={styles.halfBtn}>
+              <SecondaryButton label={t('weapons.ammoReduce')} fullWidth onPress={() => router.push('/ammo/reduce')} />
+            </View>
+          </ButtonRow>
+        </View>
+        {ammoByCaliber.length === 0 ? (
+          <EmptyState title={t('weapons.ammoEmpty')} hint={t('weapons.ammoEmptyHint')} />
+        ) : (
+          ammoByCaliber.map((row, i) => (
+            <View key={row.caliber}>
+              <ListRow
+                title={row.caliber}
+                subtitle={t('weapons.ammoRowSub', { count: row.quantity })}
+                showChevron={false}
+              />
+              {i < ammoByCaliber.length - 1 ? <ListDivider /> : null}
+            </View>
+          ))
+        )}
+      </Card>
+
       <SectionHeader title={t('weapons.tips')} />
       <Card>
         {tips.map((item, i) => {
@@ -105,5 +143,8 @@ function weaponSubtitle(
 }
 
 const styles = StyleSheet.create({
-  ctaPad: { padding: 12 },
+  ctaPad: { padding: 12, gap: 10 },
+  ammoTotal: { color: AppColors.accentBrass, fontSize: 16, fontWeight: '800' },
+  ammoIntro: { color: AppColors.textMuted, fontSize: 13, lineHeight: 18 },
+  halfBtn: { flex: 1, minWidth: 0 },
 });

@@ -19,6 +19,8 @@ import {
 } from '@/lib/scoring/mockBakerScore';
 import type { DraftShot } from '@/lib/types';
 import { persistTargetPhoto } from '@/lib/photos';
+import { canonicalCaliberLabel } from '@/lib/ammo/caliberMatch';
+import { syncTripAmmoConsumption, clearTripAmmoConsumption } from '@/lib/db/ammoRepository';
 import { normalizeWeaponCategory } from '@/lib/weapons/categoryDisplay';
 
 function mapWeaponRow(row: Weapon): Weapon {
@@ -52,7 +54,7 @@ export async function createWeapon(
     id: newId(),
     name: input.name.trim(),
     category: input.category,
-    caliber: input.caliber?.trim() || null,
+    caliber: input.caliber?.trim() ? canonicalCaliberLabel(input.caliber) : null,
     photo_path: null,
     serial_note: input.serial_note?.trim() || null,
     created_at: ts,
@@ -87,7 +89,7 @@ export async function updateWeapon(
     `UPDATE weapons SET name = ?, category = ?, caliber = ?, serial_note = ?, updated_at = ? WHERE id = ?`,
     input.name.trim(),
     input.category,
-    input.caliber?.trim() || null,
+    input.caliber?.trim() ? canonicalCaliberLabel(input.caliber) : null,
     input.serial_note?.trim() || null,
     nowMs(),
     id,
@@ -217,6 +219,10 @@ export async function createTrip(
         Math.max(0, w.rounds_fired ?? 0),
       );
     }
+
+    const weaponRows = await db.getAllAsync<Weapon>('SELECT * FROM weapons');
+    const weaponsById = new Map(weaponRows.map((w) => [w.id, w]));
+    await syncTripAmmoConsumption(db, tripId, input.weapons, weaponsById);
   });
 
   return tripId;
@@ -283,11 +289,18 @@ export async function updateTrip(
         Math.max(0, w.rounds_fired ?? 0),
       );
     }
+
+    const weaponRows = await db.getAllAsync<Weapon>('SELECT * FROM weapons');
+    const weaponsById = new Map(weaponRows.map((w) => [w.id, w]));
+    await syncTripAmmoConsumption(db, tripId, input.weapons, weaponsById);
   });
 }
 
 export async function deleteTrip(db: SQLiteDatabase, tripId: string): Promise<void> {
-  await db.runAsync('DELETE FROM trips WHERE id = ?', tripId);
+  await db.withTransactionAsync(async () => {
+    await clearTripAmmoConsumption(db, tripId);
+    await db.runAsync('DELETE FROM trips WHERE id = ?', tripId);
+  });
 }
 
 export async function listTargetsForTrip(

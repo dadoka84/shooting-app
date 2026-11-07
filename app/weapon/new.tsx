@@ -1,14 +1,18 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
+import { CaliberPicker } from '@/components/ammo/CaliberPicker';
 import { WeaponCategoryPicker } from '@/components/weapons/WeaponCategoryPicker';
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
+import type { CaliberPick } from '@/lib/ammo/calibers';
+import { resolveStoredCaliber } from '@/lib/ammo/caliberMatch';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { createWeapon } from '@/lib/db/repository';
+import type { StringKey } from '@/lib/i18n/strings';
 import type { WeaponCategory } from '@/lib/types';
 
 export default function NewWeaponScreen() {
@@ -17,13 +21,19 @@ export default function NewWeaponScreen() {
   const { t } = useI18n();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<WeaponCategory>('pistol');
-  const [caliber, setCaliber] = useState('9mm');
+  const [caliberPick, setCaliberPick] = useState<CaliberPick>('9mm');
+  const [caliberCustom, setCaliberCustom] = useState('');
   const [serialNote, setSerialNote] = useState('');
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
     if (!name.trim()) {
       Alert.alert(t('weapon.nameRequired'));
+      return;
+    }
+    const caliber = resolveStoredCaliber(caliberPick, caliberCustom);
+    if (!caliber) {
+      Alert.alert(t('ammo.caliberRequired'));
       return;
     }
     setSaving(true);
@@ -44,47 +54,67 @@ export default function NewWeaponScreen() {
   return (
     <ScreenScroll>
       <ScreenIntro title={t('weapon.newTitle')} description={t('weapon.newHint')} />
-      <Field label={t('weapon.name')} value={name} onChangeText={setName} placeholder={t('weapon.namePlaceholder')} />
-      <Text style={styles.label}>{t('weapon.category')}</Text>
-      <WeaponCategoryPicker value={category} onChange={setCategory} />
-        <Field label={t('weapon.caliber')} value={caliber} onChangeText={setCaliber} placeholder={t('weapon.caliberPlaceholder')} />
-        <Field
-          label={t('weapon.serialNote')}
-          value={serialNote}
-          onChangeText={setSerialNote}
-          placeholder={t('weapon.serialPlaceholder')}
-        />
+      <WeaponFormFields
+        t={t}
+        name={name}
+        setName={setName}
+        category={category}
+        setCategory={setCategory}
+        caliberPick={caliberPick}
+        setCaliberPick={setCaliberPick}
+        caliberCustom={caliberCustom}
+        setCaliberCustom={setCaliberCustom}
+        serialNote={serialNote}
+        setSerialNote={setSerialNote}
+      />
       <PrimaryButton label={saving ? t('common.saving') : t('weapon.saveWeapon')} fullWidth onPress={save} disabled={saving} />
     </ScreenScroll>
   );
 }
 
 export function WeaponFormFields({
+  t,
   name,
   setName,
   category,
   setCategory,
-  caliber,
-  setCaliber,
+  caliberPick,
+  setCaliberPick,
+  caliberCustom,
+  setCaliberCustom,
   serialNote,
   setSerialNote,
 }: {
+  t: (key: StringKey, vars?: Record<string, string | number>) => string;
   name: string;
   setName: (v: string) => void;
   category: WeaponCategory;
   setCategory: (v: WeaponCategory) => void;
-  caliber: string;
-  setCaliber: (v: string) => void;
+  caliberPick: CaliberPick;
+  setCaliberPick: (p: CaliberPick) => void;
+  caliberCustom: string;
+  setCaliberCustom: (v: string) => void;
   serialNote: string;
   setSerialNote: (v: string) => void;
 }) {
   return (
     <>
-      <Field label="Name" value={name} onChangeText={setName} />
-      <Text style={styles.label}>Category</Text>
+      <Field label={t('weapon.name')} value={name} onChangeText={setName} placeholder={t('weapon.namePlaceholder')} />
+      <Text style={styles.label}>{t('weapon.category')}</Text>
       <WeaponCategoryPicker value={category} onChange={setCategory} />
-      <Field label="Caliber" value={caliber} onChangeText={setCaliber} />
-      <Field label="Serial note" value={serialNote} onChangeText={setSerialNote} />
+      <Text style={styles.label}>{t('weapon.caliber')}</Text>
+      <CaliberPicker
+        pick={caliberPick}
+        onPickChange={setCaliberPick}
+        customText={caliberCustom}
+        onCustomTextChange={setCaliberCustom}
+      />
+      <Field
+        label={t('weapon.serialNote')}
+        value={serialNote}
+        onChangeText={setSerialNote}
+        placeholder={t('weapon.serialPlaceholder')}
+      />
     </>
   );
 }
@@ -114,24 +144,5 @@ function Field({
 }
 
 const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
   label: { fontWeight: '600', marginTop: 8, color: AppColors.textPrimary },
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    marginTop: 6,
-    marginRight: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    alignSelf: 'flex-start',
-    color: AppColors.textMuted,
-    overflow: 'hidden',
-  },
-  chipActive: {
-    backgroundColor: AppColors.accentOliveBright,
-    color: AppColors.textInverse,
-    borderColor: AppColors.accentBrass,
-    fontWeight: '700',
-  },
 });

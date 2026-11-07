@@ -107,3 +107,20 @@ export interface WeaponMaintenanceSchedule {
   alerted_through_rounds: number;
   updated_at: number;
 }
+
+export interface AmmoLot {
+  id: string;
+  caliber: string;
+  ammo_type: string;
+  manufacturer: string;
+  quantity_initial: number;
+  quantity_remaining: number;
+  purchased_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface AmmoCaliberSummary {
+  caliber: string;
+  quantity: number;
+}
