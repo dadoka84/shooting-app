@@ -440,6 +440,22 @@ export async function recentTrips(db: SQLiteDatabase, limit = 5): Promise<Trip[]
   return db.getAllAsync<Trip>('SELECT * FROM trips ORDER BY started_at DESC LIMIT ?', limit);
 }
 
+export type RecentTripRow = Trip & { location_name: string | null };
+
+export async function recentTripsWithLocations(
+  db: SQLiteDatabase,
+  limit = 5,
+): Promise<RecentTripRow[]> {
+  return db.getAllAsync<RecentTripRow>(
+    `SELECT t.*, l.display_name AS location_name
+     FROM trips t
+     LEFT JOIN locations l ON l.trip_id = t.id
+     ORDER BY t.started_at DESC
+     LIMIT ?`,
+    limit,
+  );
+}
+
 export async function recentTargets(db: SQLiteDatabase, limit = 5): Promise<TargetListRow[]> {
   return db.getAllAsync<TargetListRow>(
     `SELECT ti.*, t.started_at AS trip_started_at, s.total_score

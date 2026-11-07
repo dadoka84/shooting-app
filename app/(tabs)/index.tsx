@@ -25,19 +25,19 @@ import { listMaintenanceDueWeapons } from '@/lib/db/maintenanceRepository';
 import {
   getTotalRoundsFiredAllTime,
   recentTargets,
-  recentTrips,
+  recentTripsWithLocations,
+  type RecentTripRow,
   type TargetListRow,
 } from '@/lib/db/repository';
 import type { MaintenanceDueRow } from '@/lib/db/maintenanceRepository';
 import { syncWeaponMaintenanceNotifications } from '@/lib/maintenance/notifications';
-import type { Trip } from '@/lib/types';
 import { isTripCompleted } from '@/lib/trips/status';
 
 export default function HomeScreen() {
   const { db, refreshKey } = useDatabase();
   const router = useRouter();
   const { t } = useI18n();
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<RecentTripRow[]>([]);
   const [targets, setTargets] = useState<TargetListRow[]>([]);
   const [allTimeRounds, setAllTimeRounds] = useState(0);
   const [maintenanceDue, setMaintenanceDue] = useState<MaintenanceDueRow[]>([]);
@@ -45,7 +45,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        setTrips(await recentTrips(db, 5));
+        setTrips(await recentTripsWithLocations(db, 5));
         setTargets(await recentTargets(db, 5));
         setAllTimeRounds(await getTotalRoundsFiredAllTime(db));
         setMaintenanceDue(await listMaintenanceDueWeapons(db));
@@ -78,16 +78,17 @@ export default function HomeScreen() {
             title={t('home.maintenanceDue')}
             action={<LinkButton href="/(tabs)/weapons" label={t('tabs.weapons')} />}
           />
-          <Card>
+          <Card variant="brass">
             {maintenanceDue.map((row, i) => (
               <View key={row.weapon_id}>
                 <ListRow
+                  onBrass
                   title={row.weapon_name}
                   subtitle={t('home.maintenanceRowSub', { count: row.rounds_since_service })}
                   onPress={() => router.push(`/weapon/${row.weapon_id}`)}
                   right={<StatusPill label={t('maintenance.badge')} tone="warning" />}
                 />
-                {i < maintenanceDue.length - 1 ? <ListDivider /> : null}
+                {i < maintenanceDue.length - 1 ? <ListDivider onBrass /> : null}
               </View>
             ))}
           </Card>
@@ -102,8 +103,8 @@ export default function HomeScreen() {
           trips.map((item, i) => (
             <View key={item.id}>
               <ListRow
-                title={formatDateShort(item.started_at)}
-                subtitle={t('home.tripRowSub')}
+                title={tripDisplayName(item)}
+                subtitle={formatDateShort(item.started_at)}
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
                   <StatusPill
@@ -145,6 +146,10 @@ export default function HomeScreen() {
       </Card>
     </ScreenScroll>
   );
+}
+
+function tripDisplayName(trip: RecentTripRow): string {
+  return trip.location_name?.trim() || 'Unknown range';
 }
 
 function formatDateShort(ms: number): string {

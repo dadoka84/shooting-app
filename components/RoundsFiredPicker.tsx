@@ -13,9 +13,11 @@ type RoundsFiredPickerProps = {
     roundsFired: string;
     custom: string;
   };
+  /** Dark label/chips tuned for brass maintenance cards */
+  onBrass?: boolean;
 };
 
-export function RoundsFiredPicker({ value, onChange, labels }: RoundsFiredPickerProps) {
+export function RoundsFiredPicker({ value, onChange, labels, onBrass }: RoundsFiredPickerProps) {
   const presetSet = new Set<number>(PRESETS);
   const [customMode, setCustomMode] = useState(!presetSet.has(value));
   const [customText, setCustomText] = useState(customMode ? String(value) : '');
@@ -27,7 +29,7 @@ export function RoundsFiredPicker({ value, onChange, labels }: RoundsFiredPicker
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>{labels.roundsFired}</Text>
+      <Text style={[styles.label, onBrass && styles.labelOnBrass]}>{labels.roundsFired}</Text>
       <View style={styles.row}>
         {PRESETS.map((n) => {
           const active = !customMode && value === n;
@@ -35,7 +37,7 @@ export function RoundsFiredPicker({ value, onChange, labels }: RoundsFiredPicker
             <Pressable
               key={n}
               onPress={() => pickPreset(n)}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[styles.chip, onBrass && styles.chipOnBrass, active && styles.chipActive]}
             >
               <Text style={[styles.chipText, active && styles.chipTextActive]}>{n}</Text>
             </Pressable>
@@ -43,7 +45,7 @@ export function RoundsFiredPicker({ value, onChange, labels }: RoundsFiredPicker
         })}
         <Pressable
           onPress={() => setCustomMode(true)}
-          style={[styles.chip, customMode && styles.chipActive]}
+          style={[styles.chip, onBrass && styles.chipOnBrass, customMode && styles.chipActive]}
         >
           <Text style={[styles.chipText, customMode && styles.chipTextActive]}>{labels.custom}</Text>
         </Pressable>
@@ -68,6 +70,7 @@ export function RoundsFiredPicker({ value, onChange, labels }: RoundsFiredPicker
 const styles = StyleSheet.create({
   wrap: { gap: 8, marginTop: 8 },
   label: { fontWeight: '600', color: AppColors.textPrimary, fontSize: 14 },
+  labelOnBrass: { color: AppColors.textInverse },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingVertical: 8,
@@ -76,6 +79,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     backgroundColor: AppColors.surfaceRaised,
+  },
+  chipOnBrass: {
+    borderColor: 'rgba(13, 16, 13, 0.35)',
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
   },
   chipActive: {
     backgroundColor: AppColors.accentOliveBright,

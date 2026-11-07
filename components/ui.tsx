@@ -147,8 +147,14 @@ export function ButtonRow({
 
 export type StatusTone = 'success' | 'warning' | 'neutral' | 'info';
 
-export function Card({ children }: { children: React.ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
+export function Card({
+  children,
+  variant = 'default',
+}: {
+  children: React.ReactNode;
+  variant?: 'default' | 'brass';
+}) {
+  return <View style={[styles.card, variant === 'brass' && styles.cardBrass]}>{children}</View>;
 }
 
 export function SectionHeader({
@@ -200,6 +206,7 @@ export function ListRow({
   right,
   onPress,
   showChevron = true,
+  onBrass = false,
 }: {
   title: string;
   subtitle?: string;
@@ -207,23 +214,29 @@ export function ListRow({
   right?: ReactNode;
   onPress?: () => void;
   showChevron?: boolean;
+  /** Dark text for rows sitting on brass maintenance cards */
+  onBrass?: boolean;
 }) {
+  const titleStyle = onBrass ? styles.listRowTitleOnBrass : styles.listRowTitle;
+  const subtitleStyle = onBrass ? styles.listRowSubtitleOnBrass : styles.listRowSubtitle;
+  const chevronStyle = onBrass ? styles.chevronOnBrass : styles.chevron;
+
   const content = (
     <View style={styles.listRowInner}>
       {leading != null ? <View style={styles.listRowLeading}>{leading}</View> : null}
       <View style={styles.listRowTextCol}>
-        <Text style={styles.listRowTitle} numberOfLines={1}>
+        <Text style={titleStyle} numberOfLines={1}>
           {title}
         </Text>
         {subtitle ? (
-          <Text style={styles.listRowSubtitle} numberOfLines={2}>
+          <Text style={subtitleStyle} numberOfLines={2}>
             {subtitle}
           </Text>
         ) : null}
       </View>
       <View style={styles.listRowRight}>
         {right}
-        {showChevron ? <Text style={styles.chevron}>›</Text> : null}
+        {showChevron ? <Text style={chevronStyle}>›</Text> : null}
       </View>
     </View>
   );
@@ -232,7 +245,10 @@ export function ListRow({
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [styles.listRow, pressed && styles.listRowPressed]}
+        style={({ pressed }) => [
+          styles.listRow,
+          pressed && (onBrass ? styles.listRowPressedOnBrass : styles.listRowPressed),
+        ]}
         accessibilityRole="button"
       >
         {content}
@@ -243,8 +259,8 @@ export function ListRow({
   return <View style={styles.listRow}>{content}</View>;
 }
 
-export function ListDivider() {
-  return <View style={styles.listDivider} />;
+export function ListDivider({ onBrass = false }: { onBrass?: boolean }) {
+  return <View style={[styles.listDivider, onBrass && styles.listDividerOnBrass]} />;
 }
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
@@ -397,6 +413,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  cardBrass: {
+    backgroundColor: AppColors.accentBrass,
+    borderColor: AppColors.accentBrassDim,
+    shadowOpacity: 0.2,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -460,6 +481,9 @@ const styles = StyleSheet.create({
   listRowPressed: {
     backgroundColor: AppColors.surface,
   },
+  listRowPressedOnBrass: {
+    backgroundColor: 'rgba(13, 16, 13, 0.12)',
+  },
   listRowInner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -500,10 +524,29 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     marginTop: -2,
   },
+  listRowTitleOnBrass: {
+    color: AppColors.textInverse,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  listRowSubtitleOnBrass: {
+    color: 'rgba(13, 16, 13, 0.78)',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  chevronOnBrass: {
+    color: 'rgba(13, 16, 13, 0.55)',
+    fontSize: 22,
+    fontWeight: '300',
+    marginTop: -2,
+  },
   listDivider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: AppColors.borderSubtle,
     marginLeft: 14,
+  },
+  listDividerOnBrass: {
+    backgroundColor: 'rgba(13, 16, 13, 0.22)',
   },
   empty: {
     paddingVertical: 20,

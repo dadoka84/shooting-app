@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 
 import { RoundsFiredPicker } from '@/components/RoundsFiredPicker';
-import { SecondaryButton, SectionHeader } from '@/components/ui';
+import { Card, SecondaryButton, SectionHeader } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import {
@@ -107,7 +107,8 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
   return (
     <View>
       <SectionHeader title={t('maintenance.sectionTitle')} />
-      <View style={styles.card}>
+      <Card variant="brass">
+        <View style={styles.cardInner}>
         <Text style={styles.hint}>{t('maintenance.intro')}</Text>
         <Text style={styles.meta}>{t('maintenance.ownedRounds', { count: ownedRounds })}</Text>
 
@@ -125,6 +126,7 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
         <RoundsFiredPicker
           value={interval}
           onChange={onIntervalChange}
+          onBrass
           labels={{ roundsFired: t('maintenance.interval'), custom: t('common.custom') }}
         />
 
@@ -149,29 +151,26 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
             disabled={saving}
           />
         </View>
-      </View>
+        </View>
+      </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: AppColors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: AppColors.border,
+  cardInner: {
     padding: 14,
     gap: 10,
   },
   hint: {
     fontSize: 14,
     lineHeight: 20,
-    color: AppColors.textMuted,
+    color: 'rgba(13, 16, 13, 0.78)',
   },
   meta: {
     fontSize: 13,
     fontWeight: '700',
-    color: AppColors.textPrimary,
+    color: AppColors.textInverse,
   },
   toggleRow: {
     flexDirection: 'row',
@@ -182,13 +181,13 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: AppColors.textPrimary,
+    color: AppColors.textInverse,
   },
   status: {
     fontSize: 14,
     fontWeight: '700',
   },
-  statusOk: { color: AppColors.accentOliveBright },
-  statusDue: { color: AppColors.accentBrass },
+  statusOk: { color: AppColors.surface },
+  statusDue: { color: AppColors.textInverse },
   actions: { marginTop: 4 },
 });
