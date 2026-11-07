@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
+import { WeaponCategoryPicker } from '@/components/weapons/WeaponCategoryPicker';
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createWeapon } from '@/lib/db/repository';
 import type { WeaponCategory } from '@/lib/types';
-
-const CATEGORIES: WeaponCategory[] = ['pistol', 'rifle', 'pcc', 'other'];
 
 export default function NewWeaponScreen() {
   const { db, bumpRefresh } = useDatabase();
@@ -44,16 +43,8 @@ export default function NewWeaponScreen() {
     <ScreenScroll>
       <ScreenIntro title="Add to arsenal" description="Log owned, rented, or borrowed guns for trip linking." />
       <Field label="Name" value={name} onChangeText={setName} placeholder="Glock 19" />
-        <Text style={styles.label}>Category</Text>
-        {CATEGORIES.map((c) => (
-          <Text
-            key={c}
-            style={[styles.chip, category === c && styles.chipActive]}
-            onPress={() => setCategory(c)}
-          >
-            {c}
-          </Text>
-        ))}
+      <Text style={styles.label}>Category</Text>
+      <WeaponCategoryPicker value={category} onChange={setCategory} />
         <Field label="Caliber" value={caliber} onChangeText={setCaliber} placeholder="9mm" />
         <Field
           label="Serial note (optional)"
@@ -89,15 +80,7 @@ export function WeaponFormFields({
     <>
       <Field label="Name" value={name} onChangeText={setName} />
       <Text style={styles.label}>Category</Text>
-      {CATEGORIES.map((c) => (
-        <Text
-          key={c}
-          style={[styles.chip, category === c && styles.chipActive]}
-          onPress={() => setCategory(c)}
-        >
-          {c}
-        </Text>
-      ))}
+      <WeaponCategoryPicker value={category} onChange={setCategory} />
       <Field label="Caliber" value={caliber} onChangeText={setCaliber} />
       <Field label="Serial note" value={serialNote} onChangeText={setSerialNote} />
     </>

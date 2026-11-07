@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text as RNText } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
+import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
 import { OutlineButton, PrimaryButton, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
@@ -87,13 +88,22 @@ export default function NewTripScreen() {
               None / ad-hoc
             </Text>
             {weapons.map((w) => (
-              <Text
+              <View
                 key={w.id}
                 style={[styles.weaponPick, tw.weapon_id === w.id && styles.weaponPickActive]}
-                onPress={() => updateTripWeapon(setTripWeapons, index, { weapon_id: w.id })}
               >
-                {w.name}
-              </Text>
+                <Pressable
+                  style={styles.weaponPickInner}
+                  onPress={() => updateTripWeapon(setTripWeapons, index, { weapon_id: w.id })}
+                >
+                  <WeaponCategoryIcon category={w.category} size={20} />
+                  <RNText
+                    style={[styles.weaponPickLabel, tw.weapon_id === w.id && styles.weaponPickLabelActive]}
+                  >
+                    {w.name}
+                  </RNText>
+                </Pressable>
+              </View>
             ))}
             <LabelField
               label="Rental / borrowed note"
@@ -159,13 +169,22 @@ export function TripFormBody({
             ))}
           </View>
           {weapons.map((w) => (
-            <Text
+            <View
               key={w.id}
               style={[styles.weaponPick, tw.weapon_id === w.id && styles.weaponPickActive]}
-              onPress={() => updateTripWeapon(setTripWeapons, index, { weapon_id: w.id })}
             >
-              {w.name}
-            </Text>
+              <Pressable
+                style={styles.weaponPickInner}
+                onPress={() => updateTripWeapon(setTripWeapons, index, { weapon_id: w.id })}
+              >
+                <WeaponCategoryIcon category={w.category} size={20} />
+                <RNText
+                  style={[styles.weaponPickLabel, tw.weapon_id === w.id && styles.weaponPickLabelActive]}
+                >
+                  {w.name}
+                </RNText>
+              </Pressable>
+            </View>
           ))}
           <LabelField
             label="Note"
@@ -245,7 +264,26 @@ const styles = StyleSheet.create({
     borderColor: AppColors.accentBrass,
     fontWeight: '700',
   },
-  weaponPick: { paddingVertical: 4, color: AppColors.textMuted },
-  weaponPickActive: { color: AppColors.accentBrass, fontWeight: '700' },
+  weaponPick: {
+    marginTop: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: AppColors.border,
+    backgroundColor: AppColors.surface,
+    overflow: 'hidden',
+  },
+  weaponPickActive: {
+    borderColor: AppColors.accentBrass,
+    backgroundColor: 'rgba(107, 138, 78, 0.12)',
+  },
+  weaponPickInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  weaponPickLabel: { fontSize: 15, fontWeight: '600', color: AppColors.textPrimary, flex: 1 },
+  weaponPickLabelActive: { color: AppColors.accentBrass },
   hint: { color: AppColors.textMuted, paddingVertical: 4 },
 });

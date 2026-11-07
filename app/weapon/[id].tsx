@@ -1,7 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
-import { Text } from '@/components/Themed';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
+import { weaponCategoryLabel } from '@/lib/weapons/categoryDisplay';
 import {
   ButtonRow,
   Card,
@@ -9,10 +10,10 @@ import {
   ListDivider,
   ListRow,
   PrimaryButton,
-  ScreenIntro,
   ScreenScroll,
   SectionHeader,
 } from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { deleteWeapon, getWeapon } from '@/lib/db/repository';
 import type { Weapon } from '@/lib/types';
@@ -57,11 +58,24 @@ export default function WeaponDetailScreen() {
 
   return (
     <ScreenScroll>
-      <ScreenIntro title={weapon.name} description={formatCategory(weapon.category)} />
+      <Card>
+        <View style={styles.hero}>
+          <WeaponCategoryIcon category={weapon.category} size={30} />
+          <View style={styles.heroText}>
+            <Text style={styles.heroTitle}>{weapon.name}</Text>
+            <Text style={styles.heroSub}>{weaponCategoryLabel(weapon.category)}</Text>
+          </View>
+        </View>
+      </Card>
 
       <SectionHeader title="Specifications" />
       <Card>
-        <ListRow title="Category" subtitle={formatCategory(weapon.category)} showChevron={false} />
+        <ListRow
+          title="Category"
+          subtitle={weaponCategoryLabel(weapon.category)}
+          leading={<WeaponCategoryIcon category={weapon.category} />}
+          showChevron={false}
+        />
         {weapon.caliber?.trim() ? (
           <>
             <ListDivider />
@@ -87,12 +101,22 @@ export default function WeaponDetailScreen() {
   );
 }
 
-function formatCategory(cat: Weapon['category']): string {
-  const map: Record<Weapon['category'], string> = {
-    pistol: 'Pistol',
-    rifle: 'Rifle',
-    pcc: 'PCC',
-    other: 'Other',
-  };
-  return map[cat];
-}
+const styles = StyleSheet.create({
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 16,
+  },
+  heroText: { flex: 1, minWidth: 0, gap: 4 },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: AppColors.textPrimary,
+  },
+  heroSub: {
+    fontSize: 14,
+    color: AppColors.textMuted,
+    fontWeight: '600',
+  },
+});

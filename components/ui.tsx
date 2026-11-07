@@ -187,18 +187,21 @@ export function StatusPill({ label, tone }: { label: string; tone: StatusTone })
 export function ListRow({
   title,
   subtitle,
+  leading,
   right,
   onPress,
   showChevron = true,
 }: {
   title: string;
   subtitle?: string;
+  leading?: ReactNode;
   right?: ReactNode;
   onPress?: () => void;
   showChevron?: boolean;
 }) {
   const content = (
     <View style={styles.listRowInner}>
+      {leading != null ? <View style={styles.listRowLeading}>{leading}</View> : null}
       <View style={styles.listRowTextCol}>
         <Text style={styles.listRowTitle} numberOfLines={1}>
           {title}
@@ -448,6 +451,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     width: '100%',
+  },
+  listRowLeading: {
+    flexShrink: 0,
   },
   listRowTextCol: {
     flexGrow: 1,

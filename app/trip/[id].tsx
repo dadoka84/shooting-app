@@ -4,13 +4,13 @@ import { Asset } from 'expo-asset';
 import { useCallback, useState } from 'react';
 import { Alert, Image, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { WeaponListRow } from '@/components/weapons/WeaponListRow';
 import {
   ButtonRow,
   Card,
   DangerButton,
   EmptyState,
   ListDivider,
-  ListRow,
   OutlineButton,
   PrimaryButton,
   ScreenIntro,
@@ -150,12 +150,19 @@ export default function TripDetailScreen() {
           <EmptyState title="No weapons linked" hint="Edit the trip to add library guns or rental notes." />
         ) : (
           tripWeapons.map((tw, i) => {
-            const name =
-              tw.weapon_id && weaponMap[tw.weapon_id] ? weaponMap[tw.weapon_id].name : 'Ad-hoc / unlisted';
+            const linked = tw.weapon_id ? weaponMap[tw.weapon_id] : null;
+            const name = linked?.name ?? 'Ad-hoc / unlisted';
+            const category = linked?.category ?? 'other';
             const sub = [tw.possession, tw.rental_note?.trim()].filter(Boolean).join(' · ');
             return (
               <View key={tw.id}>
-                <ListRow title={name} subtitle={sub || tw.possession} showChevron={false} />
+                <WeaponListRow
+                  name={name}
+                  category={category}
+                  subtitle={sub || tw.possession}
+                  showChevron={false}
+                  showCategoryPill={Boolean(linked)}
+                />
                 {i < tripWeapons.length - 1 ? <ListDivider /> : null}
               </View>
             );

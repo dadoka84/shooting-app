@@ -1,17 +1,16 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { WeaponListRow } from '@/components/weapons/WeaponListRow';
 import {
   ButtonRow,
   Card,
   EmptyState,
   ListDivider,
-  ListRow,
   PrimaryButton,
   ScreenIntro,
   ScreenScroll,
   SectionHeader,
-  StatusPill,
 } from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listWeapons } from '@/lib/db/repository';
@@ -50,11 +49,11 @@ export default function WeaponsScreen() {
         ) : (
           weapons.map((item, i) => (
             <View key={item.id}>
-              <ListRow
-                title={item.name}
+              <WeaponListRow
+                name={item.name}
+                category={item.category}
                 subtitle={formatWeaponSubtitle(item)}
                 onPress={() => router.push(`/weapon/${item.id}`)}
-                right={<StatusPill label={formatCategory(item.category)} tone="neutral" />}
               />
               {i < weapons.length - 1 ? <ListDivider /> : null}
             </View>
@@ -63,16 +62,6 @@ export default function WeaponsScreen() {
       </Card>
     </ScreenScroll>
   );
-}
-
-function formatCategory(cat: Weapon['category']): string {
-  const map: Record<Weapon['category'], string> = {
-    pistol: 'Pistol',
-    rifle: 'Rifle',
-    pcc: 'PCC',
-    other: 'Other',
-  };
-  return map[cat];
 }
 
 const styles = StyleSheet.create({
