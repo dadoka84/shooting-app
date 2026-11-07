@@ -187,18 +187,22 @@ const tabHeaderStyles = StyleSheet.create({
 type AppHeaderProps = {
   subtitle?: string;
   allTimeShotsLabel?: string;
+  /** Edge-to-edge bar (cancels screen horizontal padding). */
+  fullBleed?: boolean;
 };
 
 /** In-screen hero: solid camo panel + target mark; nav bar shows the app name. */
-export function AppHeader({ subtitle, allTimeShotsLabel }: AppHeaderProps) {
+export function AppHeader({ subtitle, allTimeShotsLabel, fullBleed }: AppHeaderProps) {
   return (
-    <View style={headerStyles.shell}>
-      <View style={headerStyles.column}>
+    <View style={[headerStyles.shell, fullBleed && headerStyles.shellBleed]}>
+      <View style={headerStyles.row}>
         <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz app mark">
           <PistolTargetMark size={48} />
         </View>
-        {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
-        {allTimeShotsLabel ? <Text style={headerStyles.allTime}>{allTimeShotsLabel}</Text> : null}
+        <View style={headerStyles.textCol}>
+          {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
+          {allTimeShotsLabel ? <Text style={headerStyles.allTime}>{allTimeShotsLabel}</Text> : null}
+        </View>
       </View>
     </View>
   );
@@ -211,15 +215,28 @@ const headerStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     marginBottom: 16,
-    minHeight: 120,
+    minHeight: 88,
     backgroundColor: AppColors.camoB,
   },
-  column: {
+  shellBleed: {
+    alignSelf: 'stretch',
+    marginHorizontal: -16,
+    marginTop: -12,
+    borderRadius: 0,
+    borderWidth: 0,
+    marginBottom: 14,
+  },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 18,
-    gap: 10,
+    paddingVertical: 16,
+    gap: 14,
+  },
+  textCol: {
+    flex: 1,
+    gap: 4,
+    justifyContent: 'center',
   },
   markWrap: {
     width: 64,
@@ -230,6 +247,7 @@ const headerStyles = StyleSheet.create({
     backgroundColor: 'rgba(13, 16, 13, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   sub: {
     fontSize: 13,
@@ -237,13 +255,11 @@ const headerStyles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.35,
     lineHeight: 18,
-    textAlign: 'center',
   },
   allTime: {
     fontSize: 15,
     color: AppColors.textPrimary,
     fontWeight: '800',
     letterSpacing: 0.3,
-    textAlign: 'center',
   },
 });

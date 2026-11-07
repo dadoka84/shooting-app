@@ -49,10 +49,7 @@ export default function HomeScreen() {
 
   return (
     <ScreenScroll>
-      <AppHeader
-        subtitle={t('home.phaseSubtitle')}
-        allTimeShotsLabel={t('home.allTimeShots', { count: allTimeRounds })}
-      />
+      <AppHeader fullBleed allTimeShotsLabel={t('home.allTimeShots', { count: allTimeRounds })} />
       <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
 
       <Card>

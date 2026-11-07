@@ -176,13 +176,15 @@ export async function createTrip(
 ): Promise<string> {
   const tripId = newId();
   const ts = nowMs();
+  const endedAt = nowMs();
 
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `INSERT INTO trips (id, started_at, ended_at, discipline_tag, notes, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       tripId,
       input.started_at,
+      endedAt,
       input.discipline_tag?.trim() || null,
       input.notes?.trim() || null,
       ts,
