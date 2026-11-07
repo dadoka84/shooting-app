@@ -14,6 +14,7 @@ export const MAINTENANCE_CHANNEL_ID = 'weapon-maintenance';
 let handlerConfigured = false;
 
 export function configureMaintenanceNotifications(): void {
+  if (Platform.OS === 'web') return;
   if (handlerConfigured) return;
   handlerConfigured = true;
 
@@ -49,6 +50,7 @@ export async function syncWeaponMaintenanceNotifications(
   db: SQLiteDatabase,
   t: TranslateFn,
 ): Promise<void> {
+  if (Platform.OS === 'web') return;
   configureMaintenanceNotifications();
   const allowed = await ensureNotificationPermissions();
   if (!allowed) return;
