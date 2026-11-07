@@ -1,10 +1,12 @@
 import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 import { TabHeaderBackground } from '@/components/theme';
-import { AppColors } from '@/constants/theme';
+import { AppColors, TabBarLayout } from '@/constants/theme';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -12,6 +14,8 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const tabBottom = TabBarLayout.margin + insets.bottom;
 
   return (
     <Tabs
@@ -19,9 +23,31 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
         tabBarStyle: {
-          backgroundColor: AppColors.surface,
-          borderTopColor: AppColors.border,
+          position: 'absolute',
+          left: TabBarLayout.margin,
+          right: TabBarLayout.margin,
+          bottom: tabBottom,
+          height: TabBarLayout.height,
+          borderRadius: TabBarLayout.radius,
+          backgroundColor: AppColors.surfaceRaised,
+          borderTopWidth: 0,
+          borderWidth: 1,
+          borderColor: AppColors.border,
+          paddingTop: 6,
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.4,
+              shadowRadius: 10,
+            },
+            android: { elevation: 12 },
+            default: {},
+          }),
         },
+        tabBarBackground: () => (
+          <View style={[tabBarStyles.pillBg, { borderRadius: TabBarLayout.radius }]} />
+        ),
         tabBarLabelStyle: { fontWeight: '600', fontSize: 11 },
         headerTransparent: false,
         headerShadowVisible: false,
@@ -97,3 +123,11 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const tabBarStyles = StyleSheet.create({
+  pillBg: {
+    flex: 1,
+    backgroundColor: AppColors.surfaceRaised,
+    overflow: 'hidden',
+  },
+});

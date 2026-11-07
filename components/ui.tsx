@@ -3,7 +3,7 @@ import React, { type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppColors } from '@/constants/theme';
+import { AppColors, TabBarLayout } from '@/constants/theme';
 import type { StringKey } from '@/lib/i18n/strings';
 import type { ScoringStatus } from '@/lib/types';
 
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 32,
+    paddingBottom: TabBarLayout.scrollBottomPadding,
     gap: 14,
   },
   intro: {
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     borderColor: AppColors.successBorder,
   },
   contextBannerInfo: {
-    backgroundColor: 'rgba(184, 165, 114, 0.22)',
+    backgroundColor: 'rgba(212, 188, 88, 0.24)',
     borderColor: AppColors.accentBrassDim,
   },
   contextBannerTitle: {

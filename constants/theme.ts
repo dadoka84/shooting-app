@@ -14,8 +14,8 @@ export const AppColors = {
   /** Accents */
   accentOlive: '#4a5d3a',
   accentOliveBright: '#6b8a4e',
-  accentBrass: '#b8a572',
-  accentBrassDim: '#8a7d54',
+  accentBrass: '#d4bc58',
+  accentBrassDim: '#a8943c',
   accentDanger: '#c45c4a',
   /** Borders / dividers */
   border: '#2d3528',
@@ -36,6 +36,15 @@ export const AppColors = {
   neutralMuted: '#252b21',
   neutralBorder: '#2d3528',
   neutralText: '#b8c4aa',
+} as const;
+
+/** Floating pill tab bar (see app/(tabs)/_layout.tsx) */
+export const TabBarLayout = {
+  margin: 8,
+  height: 58,
+  radius: 28,
+  /** Scroll content clearance above the pill */
+  scrollBottomPadding: 110,
 } as const;
 
 export type AppColorName = keyof typeof AppColors;
