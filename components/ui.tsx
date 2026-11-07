@@ -416,7 +416,9 @@ const styles = StyleSheet.create({
   cardBrass: {
     backgroundColor: AppColors.accentBrass,
     borderColor: AppColors.accentBrassDim,
+    borderWidth: 1,
     shadowOpacity: 0.2,
+    elevation: 3,
   },
   sectionHeader: {
     flexDirection: 'row',

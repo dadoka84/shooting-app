@@ -118,8 +118,12 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
             value={enabled}
             onValueChange={onToggle}
             disabled={saving}
-            trackColor={{ false: AppColors.border, true: AppColors.accentOlive }}
-            thumbColor={enabled ? AppColors.accentBrass : AppColors.textMuted}
+            trackColor={{
+              false: 'rgba(13, 16, 13, 0.4)',
+              true: AppColors.accentOliveBright,
+            }}
+            thumbColor={enabled ? AppColors.textInverse : '#f2ecda'}
+            ios_backgroundColor="rgba(13, 16, 13, 0.35)"
           />
         </View>
 

@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View as RNView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { TargetRowIcon } from '@/components/TargetRowIcon';
 import { AppHeader } from '@/components/theme';
@@ -80,7 +80,7 @@ export default function HomeScreen() {
           />
           <Card variant="brass">
             {maintenanceDue.map((row, i) => (
-              <View key={row.weapon_id}>
+              <RNView key={row.weapon_id} style={styles.brassRowWrap}>
                 <ListRow
                   onBrass
                   title={row.weapon_name}
@@ -89,7 +89,7 @@ export default function HomeScreen() {
                   right={<StatusPill label={t('maintenance.badge')} tone="warning" />}
                 />
                 {i < maintenanceDue.length - 1 ? <ListDivider onBrass /> : null}
-              </View>
+              </RNView>
             ))}
           </Card>
         </>
@@ -169,4 +169,5 @@ function formatTemplate(id: string, t: ReturnType<typeof useI18n>['t']): string 
 const styles = StyleSheet.create({
   subtitle: { color: AppColors.textMuted, marginBottom: 8, fontSize: 14 },
   quickRow: { padding: 12 },
+  brassRowWrap: { backgroundColor: 'transparent' },
 });
