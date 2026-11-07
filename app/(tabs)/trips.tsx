@@ -49,7 +49,12 @@ export default function TripsScreen() {
       <Card>
         <View style={styles.ctaPad}>
           <ButtonRow>
-            <PrimaryButton label={t('trips.newTrip')} fullWidth onPress={() => router.push('/trip/new')} />
+            <PrimaryButton
+              label={t('trips.newTrip')}
+              icon="newTrip"
+              fullWidth
+              onPress={() => router.push('/trip/new')}
+            />
           </ButtonRow>
         </View>
       </Card>

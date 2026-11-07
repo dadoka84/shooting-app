@@ -193,7 +193,7 @@ const en: Catalog = {
   'maintenance.notifBody': '{name}: {rounds} rounds since last service',
   'maintenance.badge': 'Service due',
   'home.maintenanceDue': 'Maintenance due',
-  'home.maintenanceRowSub': '{count} rounds since service — tap to open weapon',
+  'home.maintenanceRowSub': '{count} rounds since service',
   ...stackEn,
   ...tipsEn,
 };
@@ -289,7 +289,7 @@ const bs: Catalog = {
   'maintenance.notifBody': '{name}: {rounds} metaka od zadnjeg servisa',
   'maintenance.badge': 'Servis',
   'home.maintenanceDue': 'Održavanje potrebno',
-  'home.maintenanceRowSub': '{count} metaka od servisa — dodirni za oružje',
+  'home.maintenanceRowSub': '{count} metaka od servisa',
   ...stackBs,
   ...tipsBs,
 };
@@ -385,7 +385,7 @@ const de: Catalog = {
   'maintenance.notifBody': '{name}: {rounds} Schuss seit letzter Wartung',
   'maintenance.badge': 'Wartung',
   'home.maintenanceDue': 'Wartung fällig',
-  'home.maintenanceRowSub': '{count} Schuss seit Wartung — Tippen für Waffe',
+  'home.maintenanceRowSub': '{count} Schuss seit Wartung',
   ...tipsDe,
 };
 

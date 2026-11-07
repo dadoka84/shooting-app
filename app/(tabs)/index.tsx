@@ -62,9 +62,15 @@ export default function HomeScreen() {
       <Card>
         <View style={styles.quickRow}>
           <ButtonRow layout="row">
-            <PrimaryButton label={t('home.newTrip')} fullWidth onPress={() => router.push('/trip/new')} />
+            <PrimaryButton
+              label={t('home.newTrip')}
+              icon="newTrip"
+              fullWidth
+              onPress={() => router.push('/trip/new')}
+            />
             <SecondaryButton
               label={t('home.browseTrips')}
+              icon="browseTrips"
               fullWidth
               onPress={() => router.push('/(tabs)/trips')}
             />

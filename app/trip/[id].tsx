@@ -239,7 +239,12 @@ export default function TripDetailScreen() {
 
       <SectionHeader title={t('trip.addTarget')} />
       <ButtonRow>
-        <PrimaryButton label={t('trip.takePhoto')} fullWidth onPress={pickCamera} />
+        <PrimaryButton
+          label={t('trip.takePhoto')}
+          icon="camera"
+          fullWidth
+          onPress={pickCamera}
+        />
         <SecondaryButton label={t('trip.fromGallery')} fullWidth onPress={pickLibrary} />
         <OutlineButton label={t('trip.useSample')} fullWidth onPress={useReferenceSample} />
       </ButtonRow>

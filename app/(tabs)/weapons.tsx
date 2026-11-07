@@ -55,7 +55,12 @@ export default function WeaponsScreen() {
       <Card>
         <View style={styles.ctaPad}>
           <ButtonRow>
-            <PrimaryButton label={t('weapons.addWeapon')} fullWidth onPress={() => router.push('/weapon/new')} />
+            <PrimaryButton
+              label={t('weapons.addWeapon')}
+              icon="addWeapon"
+              fullWidth
+              onPress={() => router.push('/weapon/new')}
+            />
           </ButtonRow>
         </View>
       </Card>
@@ -92,7 +97,12 @@ export default function WeaponsScreen() {
           <Text style={styles.ammoIntro}>{t('weapons.ammoIntro')}</Text>
           <ButtonRow>
             <View style={styles.halfBtn}>
-              <PrimaryButton label={t('weapons.ammoAdd')} fullWidth onPress={() => router.push('/ammo/add')} />
+              <PrimaryButton
+                label={t('weapons.ammoAdd')}
+                icon="addAmmo"
+                fullWidth
+                onPress={() => router.push('/ammo/add')}
+              />
             </View>
             <View style={styles.halfBtn}>
               <SecondaryButton label={t('weapons.ammoReduce')} fullWidth onPress={() => router.push('/ammo/reduce')} />

@@ -3,6 +3,7 @@ import React, { type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ButtonSymbol, type UiSymbolId } from '@/components/ButtonSymbol';
 import { AppColors, TabBarLayout } from '@/constants/theme';
 import type { StringKey } from '@/lib/i18n/strings';
 import type { ScoringStatus } from '@/lib/types';
@@ -16,7 +17,21 @@ type AppButtonProps = {
   variant?: ButtonVariant;
   fullWidth?: boolean;
   style?: StyleProp<ViewStyle>;
+  icon?: UiSymbolId;
 };
+
+function buttonIconColor(variant: ButtonVariant): string {
+  switch (variant) {
+    case 'secondary':
+      return AppColors.accentBrass;
+    case 'outline':
+      return AppColors.textPrimary;
+    case 'danger':
+      return '#f0b5a8';
+    default:
+      return AppColors.textInverse;
+  }
+}
 
 export function AppButton({
   label,
@@ -25,6 +40,7 @@ export function AppButton({
   variant = 'primary',
   fullWidth,
   style,
+  icon,
 }: AppButtonProps) {
   const boxStyle =
     variant === 'secondary'
@@ -64,7 +80,10 @@ export function AppButton({
         style,
       ]}
     >
-      <Text style={[styles.btnTextBase, textStyle]}>{label}</Text>
+      <View style={styles.btnInner}>
+        {icon ? <ButtonSymbol symbolId={icon} color={buttonIconColor(variant)} size={19} /> : null}
+        <Text style={[styles.btnTextBase, textStyle]}>{label}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -390,7 +409,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
+  },
+  btnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   btnFullWidth: {
     alignSelf: 'stretch',
