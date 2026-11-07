@@ -2,10 +2,11 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 
+import { AmmoQuantityField } from '@/components/ammo/AmmoQuantityField';
 import { AmmoTypePicker } from '@/components/ammo/AmmoTypePicker';
 import { CaliberPicker } from '@/components/ammo/CaliberPicker';
 import { ManufacturerPicker } from '@/components/ammo/ManufacturerPicker';
-import { ThemedTextInput } from '@/components/ThemedTextInput';
+import { PurchaseDatePicker } from '@/components/ammo/PurchaseDatePicker';
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import type { AmmoTypeId } from '@/lib/ammo/ammoTypes';
@@ -13,7 +14,7 @@ import type { CaliberPick } from '@/lib/ammo/calibers';
 import { resolveStoredCaliber } from '@/lib/ammo/caliberMatch';
 import { resolveManufacturerLabel, type ManufacturerPick } from '@/lib/ammo/manufacturers';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
-import { createAmmoLot, parsePurchaseDateInput } from '@/lib/db/ammoRepository';
+import { createAmmoLot } from '@/lib/db/ammoRepository';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export default function AddAmmoScreen() {
@@ -21,13 +22,14 @@ export default function AddAmmoScreen() {
   const router = useRouter();
   const { t } = useI18n();
 
-  const [quantity, setQuantity] = useState('50');
+  const [quantity, setQuantity] = useState(50);
+  const [quantityText, setQuantityText] = useState('50');
   const [caliberPick, setCaliberPick] = useState<CaliberPick>('9mm');
   const [caliberCustom, setCaliberCustom] = useState('');
   const [ammoType, setAmmoType] = useState<AmmoTypeId>('fmj');
   const [manufacturerPick, setManufacturerPick] = useState<ManufacturerPick>('snb');
   const [manufacturerCustom, setManufacturerCustom] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
+  const [purchaseDateMs, setPurchaseDateMs] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -41,14 +43,9 @@ export default function AddAmmoScreen() {
       Alert.alert(t('ammo.manufacturerRequired'));
       return;
     }
-    const qty = Number.parseInt(quantity, 10);
+    const qty = quantity;
     if (!Number.isFinite(qty) || qty <= 0) {
       Alert.alert(t('ammo.quantityInvalid'));
-      return;
-    }
-    const purchased = parsePurchaseDateInput(purchaseDate);
-    if (purchaseDate.trim() && purchased === null) {
-      Alert.alert(t('ammo.dateInvalid'));
       return;
     }
 
@@ -59,7 +56,7 @@ export default function AddAmmoScreen() {
         ammo_type: ammoType,
         manufacturer,
         quantity: qty,
-        purchased_at: purchased,
+        purchased_at: purchaseDateMs,
       });
       bumpRefresh();
       router.back();
@@ -74,7 +71,12 @@ export default function AddAmmoScreen() {
     <ScreenScroll>
       <ScreenIntro title={t('ammo.addTitle')} description={t('ammo.addHint')} />
 
-      <Field label={t('ammo.quantity')} value={quantity} onChangeText={setQuantity} keyboardType="number-pad" />
+      <Text style={styles.label}>{t('ammo.quantity')}</Text>
+      <AmmoQuantityField
+        quantityText={quantityText}
+        onQuantityTextChange={setQuantityText}
+        onQuantityNumber={setQuantity}
+      />
 
       <Text style={styles.label}>{t('ammo.caliber')}</Text>
       <CaliberPicker
@@ -95,12 +97,8 @@ export default function AddAmmoScreen() {
         onCustomTextChange={setManufacturerCustom}
       />
 
-      <Field
-        label={t('ammo.purchaseDate')}
-        value={purchaseDate}
-        onChangeText={setPurchaseDate}
-        placeholder={t('ammo.purchaseDatePlaceholder')}
-      />
+      <Text style={styles.label}>{t('ammo.purchaseDate')}</Text>
+      <PurchaseDatePicker valueMs={purchaseDateMs} onChange={setPurchaseDateMs} />
 
       <PrimaryButton
         label={saving ? t('common.saving') : t('ammo.saveStock')}
@@ -109,32 +107,6 @@ export default function AddAmmoScreen() {
         disabled={saving}
       />
     </ScreenScroll>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'number-pad';
-}) {
-  return (
-    <>
-      <Text style={styles.label}>{label}</Text>
-      <ThemedTextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        keyboardType={keyboardType}
-      />
-    </>
   );
 }
 
