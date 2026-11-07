@@ -1,33 +1,87 @@
 import { Link } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppColors } from '@/constants/theme';
 import type { ScoringStatus } from '@/lib/types';
 
-export function PrimaryButton({
-  label,
-  onPress,
-  disabled,
-}: {
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
+
+type AppButtonProps = {
   label: string;
   onPress: () => void;
   disabled?: boolean;
-}) {
+  variant?: ButtonVariant;
+  fullWidth?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function AppButton({
+  label,
+  onPress,
+  disabled,
+  variant = 'primary',
+  fullWidth,
+  style,
+}: AppButtonProps) {
+  const boxStyle =
+    variant === 'secondary'
+      ? styles.btnSecondary
+      : variant === 'outline'
+        ? styles.btnOutline
+        : variant === 'danger'
+          ? styles.btnDanger
+          : styles.btnPrimary;
+  const textStyle =
+    variant === 'secondary'
+      ? styles.btnTextSecondary
+      : variant === 'outline'
+        ? styles.btnTextOutline
+        : variant === 'danger'
+          ? styles.btnTextDanger
+          : styles.btnTextPrimary;
+  const pressedStyle =
+    variant === 'secondary'
+      ? styles.btnSecondaryPressed
+      : variant === 'outline'
+        ? styles.btnOutlinePressed
+        : variant === 'danger'
+          ? styles.btnDangerPressed
+          : styles.btnPrimaryPressed;
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
-        styles.btn,
-        pressed && !disabled && styles.btnPressed,
+        styles.btnBase,
+        boxStyle,
+        fullWidth && styles.btnFullWidth,
+        pressed && !disabled && pressedStyle,
         disabled && styles.btnDisabled,
+        style,
       ]}
     >
-      <Text style={styles.btnText}>{label}</Text>
+      <Text style={[styles.btnTextBase, textStyle]}>{label}</Text>
     </Pressable>
   );
+}
+
+export function PrimaryButton(props: Omit<AppButtonProps, 'variant'>) {
+  return <AppButton {...props} variant="primary" />;
+}
+
+export function SecondaryButton(props: Omit<AppButtonProps, 'variant'>) {
+  return <AppButton {...props} variant="secondary" />;
+}
+
+export function OutlineButton(props: Omit<AppButtonProps, 'variant'>) {
+  return <AppButton {...props} variant="outline" />;
+}
+
+export function DangerButton(props: Omit<AppButtonProps, 'variant'>) {
+  return <AppButton {...props} variant="danger" />;
 }
 
 export function LinkButton({ href, label }: { href: string; label: string }) {
@@ -40,12 +94,46 @@ export function LinkButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-export function ScreenScroll({ children }: { children: React.ReactNode }) {
+export function ScreenScroll({
+  children,
+  contentContainerStyle,
+}: {
+  children: React.ReactNode;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+}) {
   return (
     <SafeAreaView style={styles.safe} edges={['left', 'right', 'bottom']}>
-      <View style={styles.screen}>{children}</View>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.screen, contentContainerStyle]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator
+      >
+        {children}
+      </ScrollView>
     </SafeAreaView>
   );
+}
+
+/** Short lead copy under the nav title on tab screens */
+export function ScreenIntro({ description, title }: { description: string; title?: string }) {
+  return (
+    <View style={styles.intro}>
+      {title ? <Text style={styles.introTitle}>{title}</Text> : null}
+      <Text style={styles.introDescription}>{description}</Text>
+    </View>
+  );
+}
+
+/** Group primary / secondary / outline actions with consistent spacing */
+export function ButtonRow({
+  children,
+  layout = 'stack',
+}: {
+  children: ReactNode;
+  layout?: 'stack' | 'row';
+}) {
+  return <View style={layout === 'row' ? styles.buttonRow : styles.buttonStack}>{children}</View>;
 }
 
 export type StatusTone = 'success' | 'warning' | 'neutral' | 'info';
@@ -177,33 +265,96 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.background,
   },
-  screen: {
+  scroll: {
     flex: 1,
+  },
+  screen: {
+    flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 20,
+    paddingBottom: 32,
     gap: 14,
-    backgroundColor: AppColors.background,
   },
-  btn: {
-    backgroundColor: AppColors.accentOliveBright,
-    borderWidth: 1,
-    borderColor: AppColors.accentBrass,
+  intro: {
+    gap: 6,
+    marginBottom: 2,
+  },
+  introTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: AppColors.textPrimary,
+  },
+  introDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: AppColors.textMuted,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'center',
+  },
+  buttonStack: {
+    gap: 10,
+  },
+  btnBase: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
   },
-  btnPressed: {
+  btnFullWidth: {
+    alignSelf: 'stretch',
+  },
+  btnPrimary: {
+    backgroundColor: AppColors.accentOliveBright,
+    borderColor: AppColors.accentBrass,
+  },
+  btnPrimaryPressed: {
     backgroundColor: AppColors.accentOlive,
+  },
+  btnTextPrimary: {
+    color: AppColors.textInverse,
+  },
+  btnSecondary: {
+    backgroundColor: AppColors.surfaceRaised,
+    borderColor: AppColors.border,
+  },
+  btnSecondaryPressed: {
+    backgroundColor: AppColors.surface,
+  },
+  btnTextSecondary: {
+    color: AppColors.accentBrass,
+  },
+  btnOutline: {
+    backgroundColor: 'transparent',
+    borderColor: AppColors.accentBrassDim,
+  },
+  btnOutlinePressed: {
+    backgroundColor: AppColors.surface,
+  },
+  btnTextOutline: {
+    color: AppColors.textPrimary,
+  },
+  btnDanger: {
+    backgroundColor: 'rgba(196, 92, 74, 0.18)',
+    borderColor: AppColors.accentDanger,
+  },
+  btnDangerPressed: {
+    backgroundColor: 'rgba(196, 92, 74, 0.32)',
+  },
+  btnTextDanger: {
+    color: '#f0b5a8',
   },
   btnDisabled: {
     opacity: 0.45,
   },
-  btnText: {
-    color: AppColors.textInverse,
+  btnTextBase: {
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
+    fontSize: 15,
   },
   linkBtn: {
     paddingVertical: 10,

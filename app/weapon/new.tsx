@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createWeapon } from '@/lib/db/repository';
@@ -41,9 +41,9 @@ export default function NewWeaponScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Field label="Name" value={name} onChangeText={setName} placeholder="Glock 19" />
+    <ScreenScroll>
+      <ScreenIntro title="Add to arsenal" description="Log owned, rented, or borrowed guns for trip linking." />
+      <Field label="Name" value={name} onChangeText={setName} placeholder="Glock 19" />
         <Text style={styles.label}>Category</Text>
         {CATEGORIES.map((c) => (
           <Text
@@ -61,9 +61,8 @@ export default function NewWeaponScreen() {
           onChangeText={setSerialNote}
           placeholder="Last 4 digits only"
         />
-        <PrimaryButton label={saving ? 'Saving…' : 'Save weapon'} onPress={save} disabled={saving} />
-      </ScreenScroll>
-    </ScrollView>
+      <PrimaryButton label={saving ? 'Saving…' : 'Save weapon'} fullWidth onPress={save} disabled={saving} />
+    </ScreenScroll>
   );
 }
 

@@ -1,9 +1,18 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ShotMarkerEditor } from '@/components/targets/ShotMarkerEditor';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import {
+  ButtonRow,
+  OutlineButton,
+  PrimaryButton,
+  ScreenIntro,
+  ScreenScroll,
+  SecondaryButton,
+  SectionHeader,
+} from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { confirmTargetScore, getTarget, listShots } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
@@ -78,28 +87,39 @@ export default function TargetScoreScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Text style={styles.title}>Manual correction (M5 mock score)</Text>
-        <Text>Template baker_sl_b27e_v1 — tap/drag markers, then confirm.</Text>
-        <ShotMarkerEditor imageUri={photoUri} shots={draftShots} onChange={setDraftShots} />
-        <Text style={styles.preview}>
-          Preview: {preview.total_score} / {preview.max_score} ({draftShots.length} shots)
-        </Text>
-        <PrimaryButton label="Load demo cluster" onPress={loadDemoMarkers} />
-        <PrimaryButton label="Clear markers" onPress={clearAll} />
-        <PrimaryButton
-          label={confirming ? 'Saving…' : 'Confirm score'}
-          onPress={confirm}
-          disabled={confirming || draftShots.length === 0}
-        />
-      </ScreenScroll>
-    </ScrollView>
+    <ScreenScroll>
+      <ScreenIntro
+        title="Score target"
+        description="B‑27 Baker template — tap or drag markers, then confirm to save."
+      />
+      <ShotMarkerEditor imageUri={photoUri} shots={draftShots} onChange={setDraftShots} />
+
+      <SectionHeader title="Preview" />
+      <Text style={styles.preview}>
+        {preview.total_score} / {preview.max_score} · {draftShots.length} shot{draftShots.length === 1 ? '' : 's'}
+      </Text>
+
+      <SectionHeader title="Markers" />
+      <ButtonRow layout="row">
+        <SecondaryButton label="Demo cluster" onPress={loadDemoMarkers} />
+        <OutlineButton label="Clear all" onPress={clearAll} />
+      </ButtonRow>
+
+      <PrimaryButton
+        label={confirming ? 'Saving…' : 'Confirm score'}
+        fullWidth
+        onPress={confirm}
+        disabled={confirming || draftShots.length === 0}
+      />
+    </ScreenScroll>
   );
 }
 
 const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
-  title: { fontSize: 18, fontWeight: '700' },
-  preview: { fontWeight: '600', marginTop: 8 },
+  preview: {
+    fontWeight: '700',
+    fontSize: 17,
+    color: AppColors.accentBrass,
+    marginTop: -4,
+  },
 });

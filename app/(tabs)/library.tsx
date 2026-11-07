@@ -1,18 +1,17 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { View } from '@/components/Themed';
 import {
   Card,
   EmptyState,
   ListDivider,
   ListRow,
+  ScreenIntro,
   ScreenScroll,
   SectionHeader,
   StatusPill,
   targetStatusDisplay,
 } from '@/components/ui';
-import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listAllTargets, type TargetListRow } from '@/lib/db/repository';
 
@@ -31,7 +30,7 @@ export default function LibraryScreen() {
 
   return (
     <ScreenScroll>
-      <Text style={styles.lead}>All photos you’ve saved from trips.</Text>
+      <ScreenIntro description="All target photos saved from trips — open any to score or review." />
 
       <SectionHeader title="All targets" />
       <Card>
@@ -72,6 +71,3 @@ function formatTemplate(id: string): string {
   return id.replace(/_/g, ' ');
 }
 
-const styles = StyleSheet.create({
-  lead: { color: AppColors.textMuted, fontSize: 14, marginBottom: 4 },
-});

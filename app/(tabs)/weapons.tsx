@@ -1,12 +1,14 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { View } from '@/components/Themed';
+import { StyleSheet, View } from 'react-native';
 import {
+  ButtonRow,
   Card,
   EmptyState,
   ListDivider,
   ListRow,
   PrimaryButton,
+  ScreenIntro,
   ScreenScroll,
   SectionHeader,
   StatusPill,
@@ -30,7 +32,16 @@ export default function WeaponsScreen() {
 
   return (
     <ScreenScroll>
-      <PrimaryButton label="Add weapon" onPress={() => router.push('/weapon/new')} />
+      <ScreenIntro description="Track pistols and rifles you own, rent, or borrow on trips." />
+
+      <SectionHeader title="Add" />
+      <Card>
+        <View style={styles.ctaPad}>
+          <ButtonRow>
+            <PrimaryButton label="Add weapon" fullWidth onPress={() => router.push('/weapon/new')} />
+          </ButtonRow>
+        </View>
+      </Card>
 
       <SectionHeader title="Arsenal" />
       <Card>
@@ -63,6 +74,10 @@ function formatCategory(cat: Weapon['category']): string {
   };
   return map[cat];
 }
+
+const styles = StyleSheet.create({
+  ctaPad: { padding: 12 },
+});
 
 function formatWeaponSubtitle(w: Weapon): string {
   const parts = [w.caliber?.trim() || null].filter(Boolean) as string[];

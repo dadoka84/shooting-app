@@ -3,12 +3,14 @@ import { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import {
+  ButtonRow,
   Card,
   EmptyState,
   LinkButton,
   ListDivider,
   ListRow,
   PrimaryButton,
+  ScreenIntro,
   ScreenScroll,
   SectionHeader,
   StatusPill,
@@ -41,8 +43,16 @@ export default function TripsScreen() {
 
   return (
     <ScreenScroll>
-      <Text style={styles.lead}>Log range visits and attach targets.</Text>
-      <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
+      <ScreenIntro description="Log range visits, weapons, and target photos per trip." />
+
+      <SectionHeader title="Start" />
+      <Card>
+        <View style={styles.ctaPad}>
+          <ButtonRow>
+            <PrimaryButton label="New trip" fullWidth onPress={() => router.push('/trip/new')} />
+          </ButtonRow>
+        </View>
+      </Card>
 
       <SectionHeader title="Your trips" />
       <Card>
@@ -85,5 +95,5 @@ function formatSubtitle(t: Trip): string {
 }
 
 const styles = StyleSheet.create({
-  lead: { color: AppColors.textMuted, fontSize: 14, marginBottom: 4 },
+  ctaPad: { padding: 12 },
 });

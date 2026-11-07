@@ -6,11 +6,13 @@ import { AppHeader } from '@/components/theme';
 import {
   Card,
   EmptyState,
+  ButtonRow,
   LinkButton,
   ListDivider,
   ListRow,
   PrimaryButton,
   ScreenScroll,
+  SecondaryButton,
   SectionHeader,
   StatusPill,
   targetStatusDisplay,
@@ -42,8 +44,10 @@ export default function HomeScreen() {
 
       <Card>
         <View style={styles.quickRow}>
-          <PrimaryButton label="New trip" onPress={() => router.push('/trip/new')} />
-          <LinkButton href="/(tabs)/trips" label="Browse trips" />
+          <ButtonRow>
+            <PrimaryButton label="New trip" fullWidth onPress={() => router.push('/trip/new')} />
+            <SecondaryButton label="Browse trips" fullWidth onPress={() => router.push('/(tabs)/trips')} />
+          </ButtonRow>
         </View>
       </Card>
 

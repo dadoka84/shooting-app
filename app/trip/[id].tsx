@@ -2,9 +2,22 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Asset } from 'expo-asset';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, Image, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Image, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import {
+  ButtonRow,
+  Card,
+  DangerButton,
+  EmptyState,
+  ListDivider,
+  ListRow,
+  OutlineButton,
+  PrimaryButton,
+  ScreenIntro,
+  ScreenScroll,
+  SecondaryButton,
+  SectionHeader,
+} from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import {
@@ -110,67 +123,94 @@ export default function TripDetailScreen() {
     );
   }
 
-  return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Text style={styles.title}>{locationName || 'Trip'}</Text>
-        <Text>{new Date(trip.started_at).toLocaleString()}</Text>
-        {trip.notes ? <Text>{trip.notes}</Text> : null}
+  const started = new Date(trip.started_at).toLocaleString();
+  const ended = trip.ended_at != null ? new Date(trip.ended_at).toLocaleString() : null;
 
-        <Text style={styles.section}>Weapons</Text>
+  return (
+    <ScreenScroll>
+      <ScreenIntro
+        title={locationName || 'Trip'}
+        description={[started, ended ? `Ended ${ended}` : 'In progress', trip.discipline_tag?.trim()]
+          .filter(Boolean)
+          .join(' · ')}
+      />
+
+      {trip.notes?.trim() ? (
+        <Card>
+          <View style={styles.cardPad}>
+            <Text style={styles.notesLabel}>Notes</Text>
+            <Text style={styles.notesBody}>{trip.notes}</Text>
+          </View>
+        </Card>
+      ) : null}
+
+      <SectionHeader title="Weapons on trip" />
+      <Card>
         {tripWeapons.length === 0 ? (
-          <Text>No weapons linked.</Text>
+          <EmptyState title="No weapons linked" hint="Edit the trip to add library guns or rental notes." />
         ) : (
-          tripWeapons.map((tw) => (
-            <Text key={tw.id}>
-              {tw.possession}
-              {tw.weapon_id && weaponMap[tw.weapon_id]
-                ? ` · ${weaponMap[tw.weapon_id].name}`
-                : ''}
-              {tw.rental_note ? ` · ${tw.rental_note}` : ''}
-            </Text>
+          tripWeapons.map((tw, i) => {
+            const name =
+              tw.weapon_id && weaponMap[tw.weapon_id] ? weaponMap[tw.weapon_id].name : 'Ad-hoc / unlisted';
+            const sub = [tw.possession, tw.rental_note?.trim()].filter(Boolean).join(' · ');
+            return (
+              <View key={tw.id}>
+                <ListRow title={name} subtitle={sub || tw.possession} showChevron={false} />
+                {i < tripWeapons.length - 1 ? <ListDivider /> : null}
+              </View>
+            );
+          })
+        )}
+      </Card>
+
+      <ButtonRow>
+        <OutlineButton label="Edit trip" fullWidth onPress={() => router.push(`/trip/edit/${trip.id}`)} />
+      </ButtonRow>
+
+      <SectionHeader title="Add target" />
+      <ButtonRow>
+        <PrimaryButton label="Take photo" fullWidth onPress={pickCamera} />
+        <SecondaryButton label="From gallery" fullWidth onPress={pickLibrary} />
+        <OutlineButton label="Use B-27 sample" fullWidth onPress={useReferenceSample} />
+      </ButtonRow>
+
+      <SectionHeader title="Targets on this trip" />
+      <Card>
+        {targets.length === 0 ? (
+          <EmptyState title="No targets yet" hint="Capture or import a target photo above." />
+        ) : (
+          targets.map((item, i) => (
+            <View key={item.id}>
+              <View style={styles.targetRow}>
+                <Image source={{ uri: resolvePhotoUri(item.file_path) }} style={styles.thumb} />
+                <View style={styles.targetMeta}>
+                  <Text style={styles.targetStatus}>{item.scoring_status}</Text>
+                  <Text style={styles.targetTemplate}>{item.target_template}</Text>
+                  <ButtonRow layout="row">
+                    <OutlineButton label="Details" onPress={() => router.push(`/target/${item.id}`)} />
+                    <SecondaryButton label="Score" onPress={() => router.push(`/target/score/${item.id}`)} />
+                  </ButtonRow>
+                </View>
+              </View>
+              {i < targets.length - 1 ? <ListDivider /> : null}
+            </View>
           ))
         )}
+      </Card>
 
-        <PrimaryButton label="Edit trip" onPress={() => router.push(`/trip/edit/${trip.id}`)} />
-
-        <Text style={styles.section}>Targets</Text>
-        <PrimaryButton label="Camera" onPress={pickCamera} />
-        <PrimaryButton label="Import from gallery" onPress={pickLibrary} />
-        <PrimaryButton label="Use B-27 reference sample" onPress={useReferenceSample} />
-
-        <FlatList
-          data={targets}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-          ListEmptyComponent={<Text>No targets yet.</Text>}
-          renderItem={({ item }) => (
-            <View style={styles.targetRow}>
-              <Image source={{ uri: resolvePhotoUri(item.file_path) }} style={styles.thumb} />
-              <View style={styles.targetMeta}>
-                <Text onPress={() => router.push(`/target/${item.id}`)}>
-                  {item.scoring_status} · tap for detail
-                </Text>
-                <Text onPress={() => router.push(`/target/score/${item.id}`)} style={styles.link}>
-                  Score / correct
-                </Text>
-              </View>
-            </View>
-          )}
-        />
-
-        <PrimaryButton label="Delete trip" onPress={removeTrip} />
-      </ScreenScroll>
-    </ScrollView>
+      <SectionHeader title="Danger zone" />
+      <DangerButton label="Delete trip" fullWidth onPress={removeTrip} />
+    </ScreenScroll>
   );
 }
 
 const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
-  title: { fontSize: 22, fontWeight: '700' },
-  section: { fontSize: 18, fontWeight: '600', marginTop: 12 },
-  targetRow: { flexDirection: 'row', gap: 10, marginTop: 10, alignItems: 'center' },
+  cardPad: { padding: 14, gap: 6 },
+  notesLabel: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', color: AppColors.textMuted },
+  notesBody: { fontSize: 15, lineHeight: 22, color: AppColors.textPrimary },
+  targetRow: { flexDirection: 'row', gap: 10, padding: 10, alignItems: 'flex-start' },
   thumb: { width: 72, height: 96, borderRadius: 6, backgroundColor: AppColors.surfaceRaised },
-  targetMeta: { flex: 1, gap: 6 },
-  link: { color: AppColors.accentBrass, fontWeight: '700' },
+  targetMeta: { flex: 1, gap: 8, minWidth: 0 },
+  targetStatus: { fontSize: 16, fontWeight: '700', color: AppColors.textPrimary },
+  targetTemplate: { fontSize: 13, color: AppColors.textMuted },
 });

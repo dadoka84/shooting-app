@@ -56,6 +56,12 @@ npm run typecheck   # tsc --noEmit
 npm start           # expo start
 ```
 
+Screens use **`ScreenScroll`** (`ScrollView` + safe area) so long trip and library lists are not clipped. Primary actions use filled olive buttons; secondary, outline, and danger variants live in `components/ui.tsx`.
+
+## Product plan
+
+Competitive scan and milestone roadmap: [docs/PLAN.md](docs/PLAN.md).
+
 ## Next steps (M6+ — not in this pass)
 
 - **M6:** Classical CV pipeline for `baker_sl_b27e_v1` (template alignment, blob hole detection, ring assignment from traced geometry in `assets/targets/baker_sl_b27e_v1.json`)

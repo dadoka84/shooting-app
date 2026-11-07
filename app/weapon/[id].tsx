@@ -1,8 +1,18 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
 import { Text } from '@/components/Themed';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import {
+  ButtonRow,
+  Card,
+  DangerButton,
+  ListDivider,
+  ListRow,
+  PrimaryButton,
+  ScreenIntro,
+  ScreenScroll,
+  SectionHeader,
+} from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { deleteWeapon, getWeapon } from '@/lib/db/repository';
 import type { Weapon } from '@/lib/types';
@@ -46,20 +56,43 @@ export default function WeaponDetailScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Text style={styles.title}>{weapon.name}</Text>
-        <Text>Category: {weapon.category}</Text>
-        {weapon.caliber ? <Text>Caliber: {weapon.caliber}</Text> : null}
-        {weapon.serial_note ? <Text>Serial note: {weapon.serial_note}</Text> : null}
-        <PrimaryButton label="Edit" onPress={() => router.push(`/weapon/edit/${weapon.id}`)} />
-        <PrimaryButton label="Delete" onPress={remove} />
-      </ScreenScroll>
-    </ScrollView>
+    <ScreenScroll>
+      <ScreenIntro title={weapon.name} description={formatCategory(weapon.category)} />
+
+      <SectionHeader title="Specifications" />
+      <Card>
+        <ListRow title="Category" subtitle={formatCategory(weapon.category)} showChevron={false} />
+        {weapon.caliber?.trim() ? (
+          <>
+            <ListDivider />
+            <ListRow title="Caliber" subtitle={weapon.caliber} showChevron={false} />
+          </>
+        ) : null}
+        {weapon.serial_note?.trim() ? (
+          <>
+            <ListDivider />
+            <ListRow title="Serial / note" subtitle={weapon.serial_note} showChevron={false} />
+          </>
+        ) : null}
+      </Card>
+
+      <SectionHeader title="Actions" />
+      <ButtonRow>
+        <PrimaryButton label="Edit weapon" fullWidth onPress={() => router.push(`/weapon/edit/${weapon.id}`)} />
+      </ButtonRow>
+
+      <SectionHeader title="Danger zone" />
+      <DangerButton label="Delete weapon" fullWidth onPress={remove} />
+    </ScreenScroll>
   );
 }
 
-const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
-  title: { fontSize: 22, fontWeight: '700' },
-});
+function formatCategory(cat: Weapon['category']): string {
+  const map: Record<Weapon['category'], string> = {
+    pistol: 'Pistol',
+    rifle: 'Rifle',
+    pcc: 'PCC',
+    other: 'Other',
+  };
+  return map[cat];
+}

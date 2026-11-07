@@ -1,8 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
 import { Text } from '@/components/Themed';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { TripFormBody } from '@/app/trip/new';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import {
@@ -81,10 +81,9 @@ export default function EditTripScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Text>Started: {new Date(startedAt).toLocaleString()}</Text>
-        <TripFormBody
+    <ScreenScroll>
+      <ScreenIntro title="Edit trip" description={`Started ${new Date(startedAt).toLocaleString()}`} />
+      <TripFormBody
           locationName={locationName}
           setLocationName={setLocationName}
           notes={notes}
@@ -95,12 +94,7 @@ export default function EditTripScreen() {
           setTripWeapons={setTripWeapons}
           weapons={weapons}
         />
-        <PrimaryButton label="Save changes" onPress={save} />
-      </ScreenScroll>
-    </ScrollView>
+      <PrimaryButton label="Save changes" fullWidth onPress={save} />
+    </ScreenScroll>
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
-});

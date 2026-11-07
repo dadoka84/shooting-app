@@ -1,8 +1,20 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { Alert, Image, StyleSheet } from 'react-native';
+import { Text, View } from '@/components/Themed';
+import {
+  ButtonRow,
+  Card,
+  DangerButton,
+  ListDivider,
+  ListRow,
+  PrimaryButton,
+  ScreenScroll,
+  SectionHeader,
+  StatusPill,
+  targetStatusDisplay,
+} from '@/components/ui';
+import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { deleteTarget, getScore, getTarget, listShots } from '@/lib/db/repository';
 import { resolvePhotoUri } from '@/lib/photos';
@@ -52,44 +64,82 @@ export default function TargetDetailScreen() {
     );
   }
 
+  const st = targetStatusDisplay(target.scoring_status, score?.total_score ?? null);
+
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
+    <ScreenScroll>
+      <Card>
         <Image source={{ uri: resolvePhotoUri(target.file_path) }} style={styles.image} />
-        <Text>Template: {target.target_template}</Text>
-        <Text>Status: {target.scoring_status}</Text>
+      </Card>
+
+      <SectionHeader title="Scoring" />
+      <Card>
+        <ListRow
+          title="Status"
+          subtitle={target.target_template}
+          showChevron={false}
+          right={<StatusPill label={st.label} tone={st.tone} />}
+        />
         {score ? (
           <>
-            <Text style={styles.score}>
-              Score: {score.total_score}
-              {score.max_score != null ? ` / ${score.max_score}` : ''}
-            </Text>
-            <Text>Algorithm: {score.algorithm_version}</Text>
-            {score.group_size_mm != null ? <Text>Group spread (mock mm): {score.group_size_mm.toFixed(1)}</Text> : null}
+            <ListDivider />
+            <ListRow
+              title={`${score.total_score}${score.max_score != null ? ` / ${score.max_score}` : ''} points`}
+              subtitle={`Algorithm ${score.algorithm_version}`}
+              showChevron={false}
+            />
+            {score.group_size_mm != null ? (
+              <>
+                <ListDivider />
+                <ListRow
+                  title="Group spread"
+                  subtitle={`${score.group_size_mm.toFixed(1)} mm (mock)`}
+                  showChevron={false}
+                />
+              </>
+            ) : null}
           </>
         ) : (
-          <Text>No confirmed score yet.</Text>
-        )}
-        {shots.length > 0 ? (
           <>
-            <Text style={styles.section}>Shots</Text>
-            {shots.map((s) => (
-              <Text key={s.id}>
-                #{s.ordinal + 1} · ring {s.ring_value} · ({s.x_norm.toFixed(2)}, {s.y_norm.toFixed(2)})
-              </Text>
-            ))}
+            <ListDivider />
+            <View style={styles.cardPad}>
+              <Text style={styles.muted}>No confirmed score yet. Use Score / correct to mark shots.</Text>
+            </View>
           </>
-        ) : null}
-        <PrimaryButton label="Score / correct" onPress={() => router.push(`/target/score/${target.id}`)} />
-        <PrimaryButton label="Delete target" onPress={remove} />
-      </ScreenScroll>
-    </ScrollView>
+        )}
+      </Card>
+
+      {shots.length > 0 ? (
+        <>
+          <SectionHeader title="Shots" />
+          <Card>
+            {shots.map((s, i) => (
+              <View key={s.id}>
+                <ListRow
+                  title={`Shot ${s.ordinal + 1}`}
+                  subtitle={`Ring ${s.ring_value} · (${s.x_norm.toFixed(2)}, ${s.y_norm.toFixed(2)})`}
+                  showChevron={false}
+                />
+                {i < shots.length - 1 ? <ListDivider /> : null}
+              </View>
+            ))}
+          </Card>
+        </>
+      ) : null}
+
+      <SectionHeader title="Actions" />
+      <ButtonRow>
+        <PrimaryButton label="Score / correct" fullWidth onPress={() => router.push(`/target/score/${target.id}`)} />
+      </ButtonRow>
+
+      <SectionHeader title="Danger zone" />
+      <DangerButton label="Delete target" fullWidth onPress={remove} />
+    </ScreenScroll>
   );
 }
 
 const styles = StyleSheet.create({
-  pad: { flexGrow: 1 },
-  image: { width: '100%', height: 360, borderRadius: 8, backgroundColor: '#111' },
-  score: { fontSize: 20, fontWeight: '700', marginTop: 8 },
-  section: { fontWeight: '600', marginTop: 8 },
+  image: { width: '100%', height: 360, borderRadius: 8, backgroundColor: AppColors.surface },
+  cardPad: { padding: 14 },
+  muted: { color: AppColors.textMuted, fontSize: 14, lineHeight: 20 },
 });

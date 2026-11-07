@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from '@/components/Themed';
-import { Card, ListDivider, ListRow, ScreenScroll, SectionHeader } from '@/components/ui';
+import { Card, ListDivider, ListRow, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { listStaticTips } from '@/lib/db/repository';
 
@@ -19,6 +19,7 @@ export default function MoreScreen() {
 
   return (
     <ScreenScroll>
+      <ScreenIntro description="Offline Phase 1 build — privacy, units, and fundamentals tips." />
       <SectionHeader title="About this build" />
       <Card>
         <ListRow

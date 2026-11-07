@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
-import { PrimaryButton, ScreenScroll } from '@/components/ui';
+import { OutlineButton, PrimaryButton, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createTrip, listWeapons } from '@/lib/db/repository';
@@ -52,9 +52,11 @@ export default function NewTripScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.pad}>
-      <ScreenScroll>
-        <Text style={styles.meta}>Started: {new Date(startedAt).toLocaleString()}</Text>
+    <ScreenScroll>
+        <ScreenIntro
+          title="New range trip"
+          description={`Started ${new Date(startedAt).toLocaleString()}`}
+        />
         <LabelField label="Range / location" value={locationName} onChangeText={setLocationName} />
         <LabelField
           label="Discipline tag (optional)"
@@ -64,7 +66,7 @@ export default function NewTripScreen() {
         />
         <LabelField label="Notes" value={notes} onChangeText={setNotes} multiline />
 
-        <Text style={styles.section}>Weapons on trip</Text>
+        <SectionHeader title="Weapons on trip" />
         {tripWeapons.map((tw, index) => (
           <View key={index} style={styles.weaponRow}>
             <Text style={styles.rowTitle}>Weapon #{index + 1}</Text>
@@ -100,8 +102,9 @@ export default function NewTripScreen() {
             />
           </View>
         ))}
-        <PrimaryButton
+        <OutlineButton
           label="Add another weapon row"
+          fullWidth
           onPress={() =>
             setTripWeapons((rows) => [
               ...rows,
@@ -109,9 +112,8 @@ export default function NewTripScreen() {
             ])
           }
         />
-        <PrimaryButton label={saving ? 'Saving…' : 'Save trip'} onPress={save} disabled={saving} />
-      </ScreenScroll>
-    </ScrollView>
+      <PrimaryButton label={saving ? 'Saving…' : 'Save trip'} fullWidth onPress={save} disabled={saving} />
+    </ScreenScroll>
   );
 }
 
