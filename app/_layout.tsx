@@ -10,6 +10,7 @@ import 'react-native-reanimated';
 
 import { AppColors } from '@/constants/theme';
 import { DatabaseProvider } from '@/lib/db/DatabaseProvider';
+import { I18nProvider, useI18n } from '@/lib/i18n/I18nProvider';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -41,15 +42,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppColors.background }}>
       <SafeAreaProvider>
-        <DatabaseProvider>
-          <RootLayoutNav />
-        </DatabaseProvider>
+        <I18nProvider>
+          <DatabaseProvider>
+            <RootLayoutNav />
+          </DatabaseProvider>
+        </I18nProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
 function RootLayoutNav() {
+  const { t } = useI18n();
   const navTheme = useMemo(
     () => ({
       ...DarkTheme,
@@ -78,14 +82,14 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="trip/new" options={{ title: 'New trip' }} />
-        <Stack.Screen name="trip/[id]" options={{ title: 'Trip' }} />
-        <Stack.Screen name="trip/edit/[id]" options={{ title: 'Edit trip' }} />
-        <Stack.Screen name="weapon/new" options={{ title: 'Add weapon' }} />
-        <Stack.Screen name="weapon/[id]" options={{ title: 'Weapon' }} />
-        <Stack.Screen name="weapon/edit/[id]" options={{ title: 'Edit weapon' }} />
-        <Stack.Screen name="target/[id]" options={{ title: 'Target' }} />
-        <Stack.Screen name="target/score/[id]" options={{ title: 'Score target' }} />
+        <Stack.Screen name="trip/new" options={{ title: t('stack.newTrip') }} />
+        <Stack.Screen name="trip/[id]" options={{ title: t('stack.trip') }} />
+        <Stack.Screen name="trip/edit/[id]" options={{ title: t('stack.editTrip') }} />
+        <Stack.Screen name="weapon/new" options={{ title: t('stack.addWeapon') }} />
+        <Stack.Screen name="weapon/[id]" options={{ title: t('stack.weapon') }} />
+        <Stack.Screen name="weapon/edit/[id]" options={{ title: t('stack.editWeapon') }} />
+        <Stack.Screen name="target/[id]" options={{ title: t('stack.target') }} />
+        <Stack.Screen name="target/score/[id]" options={{ title: t('stack.scoreTarget') }} />
       </Stack>
     </ThemeProvider>
   );

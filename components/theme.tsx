@@ -186,25 +186,21 @@ const tabHeaderStyles = StyleSheet.create({
 
 type AppHeaderProps = {
   subtitle?: string;
+  allTimeShotsLabel?: string;
 };
 
-/** In-screen hero: camo + target mark; nav bar shows the app name (avoid duplicating title beside icon). */
-export function AppHeader({ subtitle }: AppHeaderProps) {
+/** In-screen hero: solid camo panel + target mark; nav bar shows the app name. */
+export function AppHeader({ subtitle, allTimeShotsLabel }: AppHeaderProps) {
   return (
-    <ImageBackground
-      source={CAMO_HEADER_IMAGE}
-      style={headerStyles.shell}
-      imageStyle={headerStyles.shellImage}
-      resizeMode="cover"
-    >
-      <View style={headerStyles.scrim} />
+    <View style={headerStyles.shell}>
       <View style={headerStyles.column}>
         <View style={headerStyles.markWrap} accessibilityLabel="WhatShotz app mark">
           <PistolTargetMark size={48} />
         </View>
         {subtitle ? <Text style={headerStyles.sub}>{subtitle}</Text> : null}
+        {allTimeShotsLabel ? <Text style={headerStyles.allTime}>{allTimeShotsLabel}</Text> : null}
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -216,16 +212,9 @@ const headerStyles = StyleSheet.create({
     borderColor: AppColors.border,
     marginBottom: 16,
     minHeight: 120,
-  },
-  shellImage: {
-    borderRadius: 12,
-  },
-  scrim: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(13, 16, 13, 0.42)',
+    backgroundColor: AppColors.camoB,
   },
   column: {
-    zIndex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
@@ -248,6 +237,13 @@ const headerStyles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.35,
     lineHeight: 18,
+    textAlign: 'center',
+  },
+  allTime: {
+    fontSize: 15,
+    color: AppColors.textPrimary,
+    fontWeight: '800',
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
 });

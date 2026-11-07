@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 export function useClientOnlyValue<S, C>(server: S, client: C): S | C {
   const [value, setValue] = useState<S | C>(server);
   useEffect(() => {
+    // Hydrate from client bundle after SSR (Expo template pattern).
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional one-time client sync
     setValue(client);
   }, [client]);
 

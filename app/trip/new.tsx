@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text as RNText } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
+import { RoundsFiredPicker } from '@/components/RoundsFiredPicker';
 import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
 import { OutlineButton, PrimaryButton, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { createTrip, listWeapons } from '@/lib/db/repository';
@@ -19,9 +21,10 @@ export default function NewTripScreen() {
   const [locationName, setLocationName] = useState('');
   const [notes, setNotes] = useState('');
   const [discipline, setDiscipline] = useState('');
-  const [startedAt] = useState(Date.now());
+  const [startedAt] = useState(() => Date.now());
+  const { t } = useI18n();
   const [tripWeapons, setTripWeapons] = useState<TripWeaponInput[]>([
-    { weapon_id: null, possession: 'owned', rental_note: null },
+    { weapon_id: null, possession: 'owned', rental_note: null, rounds_fired: 50 },
   ]);
   const [saving, setSaving] = useState(false);
 
@@ -105,6 +108,11 @@ export default function NewTripScreen() {
                 </Pressable>
               </View>
             ))}
+            <RoundsFiredPicker
+              value={tw.rounds_fired}
+              onChange={(n) => updateTripWeapon(setTripWeapons, index, { rounds_fired: n })}
+              labels={{ roundsFired: t('common.roundsFired'), custom: t('common.custom') }}
+            />
             <LabelField
               label="Rental / borrowed note"
               value={tw.rental_note ?? ''}
@@ -118,7 +126,7 @@ export default function NewTripScreen() {
           onPress={() =>
             setTripWeapons((rows) => [
               ...rows,
-              { weapon_id: null, possession: 'owned', rental_note: null },
+              { weapon_id: null, possession: 'owned', rental_note: null, rounds_fired: 50 },
             ])
           }
         />
@@ -137,6 +145,7 @@ export function TripFormBody({
   tripWeapons,
   setTripWeapons,
   weapons,
+  roundsLabels,
 }: {
   locationName: string;
   setLocationName: (v: string) => void;
@@ -147,6 +156,7 @@ export function TripFormBody({
   tripWeapons: TripWeaponInput[];
   setTripWeapons: React.Dispatch<React.SetStateAction<TripWeaponInput[]>>;
   weapons: Weapon[];
+  roundsLabels: { roundsFired: string; custom: string };
 }) {
   return (
     <>
@@ -186,6 +196,11 @@ export function TripFormBody({
               </Pressable>
             </View>
           ))}
+          <RoundsFiredPicker
+            value={tw.rounds_fired}
+            onChange={(n) => updateTripWeapon(setTripWeapons, index, { rounds_fired: n })}
+            labels={roundsLabels}
+          />
           <LabelField
             label="Note"
             value={tw.rental_note ?? ''}

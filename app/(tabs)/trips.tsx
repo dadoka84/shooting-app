@@ -1,12 +1,10 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { StyleSheet, View } from 'react-native';
 import {
   ButtonRow,
   Card,
   EmptyState,
-  LinkButton,
   ListDivider,
   ListRow,
   PrimaryButton,
@@ -15,8 +13,8 @@ import {
   SectionHeader,
   StatusPill,
 } from '@/components/ui';
-import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getTripLocation, listTrips } from '@/lib/db/repository';
 import type { Trip } from '@/lib/types';
 
@@ -25,6 +23,7 @@ type TripRow = Trip & { location_name?: string };
 export default function TripsScreen() {
   const { db, refreshKey } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [rows, setRows] = useState<TripRow[]>([]);
 
   useFocusEffect(
@@ -43,21 +42,21 @@ export default function TripsScreen() {
 
   return (
     <ScreenScroll>
-      <ScreenIntro description="Log range visits, weapons, and target photos per trip." />
+      <ScreenIntro description={t('trips.intro')} />
 
-      <SectionHeader title="Start" />
+      <SectionHeader title={t('trips.start')} />
       <Card>
         <View style={styles.ctaPad}>
           <ButtonRow>
-            <PrimaryButton label="New trip" fullWidth onPress={() => router.push('/trip/new')} />
+            <PrimaryButton label={t('trips.newTrip')} fullWidth onPress={() => router.push('/trip/new')} />
           </ButtonRow>
         </View>
       </Card>
 
-      <SectionHeader title="Your trips" />
+      <SectionHeader title={t('trips.yourTrips')} />
       <Card>
         {rows.length === 0 ? (
-          <EmptyState title="No trips logged yet" hint="Create a trip to get started." />
+          <EmptyState title={t('trips.empty')} hint={t('trips.emptyHint')} />
         ) : (
           rows.map((item, i) => (
             <View key={item.id}>
@@ -67,7 +66,7 @@ export default function TripsScreen() {
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
                   <StatusPill
-                    label={item.ended_at != null ? 'Done' : 'Open'}
+                    label={item.ended_at != null ? t('trips.done') : t('trips.open')}
                     tone={item.ended_at != null ? 'success' : 'warning'}
                   />
                 }
@@ -77,20 +76,18 @@ export default function TripsScreen() {
           ))
         )}
       </Card>
-
-      <LinkButton href="/(tabs)/index" label="Back to home" />
     </ScreenScroll>
   );
 }
 
-function formatSubtitle(t: Trip): string {
-  const when = new Date(t.started_at).toLocaleString(undefined, {
+function formatSubtitle(trip: Trip): string {
+  const when = new Date(trip.started_at).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
-  const extra = t.discipline_tag?.trim();
+  const extra = trip.discipline_tag?.trim();
   return extra ? `${when} · ${extra}` : when;
 }
 

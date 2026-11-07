@@ -5,6 +5,7 @@ import { Text } from '@/components/Themed';
 import { PrimaryButton, ScreenIntro, ScreenScroll } from '@/components/ui';
 import { TripFormBody } from '@/app/trip/new';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   getTrip,
   getTripLocation,
@@ -17,12 +18,13 @@ import type { TripWeaponInput, Weapon } from '@/lib/types';
 export default function EditTripScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { db, bumpRefresh } = useDatabase();
+  const { t } = useI18n();
   const router = useRouter();
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const [locationName, setLocationName] = useState('');
   const [notes, setNotes] = useState('');
   const [discipline, setDiscipline] = useState('');
-  const [startedAt, setStartedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(() => Date.now());
   const [tripWeapons, setTripWeapons] = useState<TripWeaponInput[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,10 +48,11 @@ export default function EditTripScreen() {
           weapon_id: tw.weapon_id,
           possession: tw.possession,
           rental_note: tw.rental_note,
+          rounds_fired: tw.rounds_fired ?? 0,
         })),
       );
       if (tws.length === 0) {
-        setTripWeapons([{ weapon_id: null, possession: 'owned', rental_note: null }]);
+        setTripWeapons([{ weapon_id: null, possession: 'owned', rental_note: null, rounds_fired: 50 }]);
       }
       setWeapons(weaponList);
       setLoading(false);
@@ -93,6 +96,7 @@ export default function EditTripScreen() {
           tripWeapons={tripWeapons}
           setTripWeapons={setTripWeapons}
           weapons={weapons}
+          roundsLabels={{ roundsFired: t('common.roundsFired'), custom: t('common.custom') }}
         />
       <PrimaryButton label="Save changes" fullWidth onPress={save} />
     </ScreenScroll>

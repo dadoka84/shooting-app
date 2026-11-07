@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Image,
   LayoutChangeEvent,
@@ -25,7 +25,9 @@ export function ShotMarkerEditor({ imageUri, shots, onChange }: Props) {
   const [layout, setLayout] = useState({ width: 1, height: 1 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const shotsRef = useRef(shots);
-  shotsRef.current = shots;
+  useEffect(() => {
+    shotsRef.current = shots;
+  }, [shots]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -97,27 +99,27 @@ function DraggableMarker({
   onSelect: () => void;
   onMove: (x_norm: number, y_norm: number) => void;
 }) {
-  const startNorm = useRef({ x: shot.x_norm, y: shot.y_norm });
-
-  const pan = useRef(
-    PanResponder.create({
+  const pan = useMemo(() => {
+    const start = { x: shot.x_norm, y: shot.y_norm };
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         onSelect();
-        startNorm.current = { x: shot.x_norm, y: shot.y_norm };
+        start.x = shot.x_norm;
+        start.y = shot.y_norm;
       },
       onPanResponderMove: (_evt, gesture) => {
-        const xPx = startNorm.current.x * layout.width + gesture.dx;
-        const yPx = startNorm.current.y * layout.height + gesture.dy;
+        const xPx = start.x * layout.width + gesture.dx;
+        const yPx = start.y * layout.height + gesture.dy;
         onMove(clamp01(xPx / layout.width), clamp01(yPx / layout.height));
       },
       onPanResponderRelease: (_evt, gesture) => {
-        const xPx = startNorm.current.x * layout.width + gesture.dx;
-        const yPx = startNorm.current.y * layout.height + gesture.dy;
+        const xPx = start.x * layout.width + gesture.dx;
+        const yPx = start.y * layout.height + gesture.dy;
         onMove(clamp01(xPx / layout.width), clamp01(yPx / layout.height));
       },
-    }),
-  ).current;
+    });
+  }, [layout.height, layout.width, onMove, onSelect, shot.x_norm, shot.y_norm]);
 
   const left = shot.x_norm * layout.width - MARKER_SIZE / 2;
   const top = shot.y_norm * layout.height - MARKER_SIZE / 2;

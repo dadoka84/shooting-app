@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -133,7 +133,16 @@ export function ButtonRow({
   children: ReactNode;
   layout?: 'stack' | 'row';
 }) {
-  return <View style={layout === 'row' ? styles.buttonRow : styles.buttonStack}>{children}</View>;
+  if (layout === 'row') {
+    return (
+      <View style={styles.buttonRow}>
+        {React.Children.map(children, (child) => (
+          <View style={styles.buttonRowEqualChild}>{child}</View>
+        ))}
+      </View>
+    );
+  }
+  return <View style={styles.buttonStack}>{children}</View>;
 }
 
 export type StatusTone = 'success' | 'warning' | 'neutral' | 'info';
@@ -294,9 +303,14 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: 8,
-    alignItems: 'center',
+    alignItems: 'stretch',
+    width: '100%',
+  },
+  buttonRowEqualChild: {
+    flex: 1,
+    minWidth: 0,
   },
   buttonStack: {
     gap: 10,

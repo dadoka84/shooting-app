@@ -35,6 +35,7 @@ export interface TripWeapon {
   possession: Possession;
   rental_note: string | null;
   sort_order: number;
+  rounds_fired: number;
 }
 
 export interface Location {
@@ -92,4 +93,5 @@ export interface TripWeaponInput {
   weapon_id: string | null;
   possession: Possession;
   rental_note: string | null;
+  rounds_fired: number;
 }

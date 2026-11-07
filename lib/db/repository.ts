@@ -113,14 +113,53 @@ export async function getTripLocation(
   return db.getFirstAsync<Location>('SELECT * FROM locations WHERE trip_id = ?', tripId);
 }
 
+function mapTripWeaponRow(row: TripWeapon): TripWeapon {
+  return {
+    ...row,
+    rounds_fired: row.rounds_fired ?? 0,
+  };
+}
+
 export async function listTripWeapons(
   db: SQLiteDatabase,
   tripId: string,
 ): Promise<TripWeapon[]> {
-  return db.getAllAsync<TripWeapon>(
+  const rows = await db.getAllAsync<TripWeapon>(
     'SELECT * FROM trip_weapons WHERE trip_id = ? ORDER BY sort_order, id',
     tripId,
   );
+  return rows.map(mapTripWeaponRow);
+}
+
+export async function getTotalRoundsFiredAllTime(db: SQLiteDatabase): Promise<number> {
+  const row = await db.getFirstAsync<{ total: number }>(
+    'SELECT COALESCE(SUM(rounds_fired), 0) AS total FROM trip_weapons',
+  );
+  return row?.total ?? 0;
+}
+
+export type WeaponWithRoundTotal = Weapon & { rounds_fired_total: number };
+
+export async function listWeaponsWithRoundTotals(db: SQLiteDatabase): Promise<WeaponWithRoundTotal[]> {
+  const rows = await db.getAllAsync<WeaponWithRoundTotal>(
+    `SELECT w.*, COALESCE(SUM(tw.rounds_fired), 0) AS rounds_fired_total
+     FROM weapons w
+     LEFT JOIN trip_weapons tw ON tw.weapon_id = w.id
+     GROUP BY w.id
+     ORDER BY w.name COLLATE NOCASE`,
+  );
+  return rows.map((w) => ({
+    ...mapWeaponRow(w),
+    rounds_fired_total: w.rounds_fired_total ?? 0,
+  }));
+}
+
+export async function getTripRoundsFiredTotal(db: SQLiteDatabase, tripId: string): Promise<number> {
+  const row = await db.getFirstAsync<{ total: number }>(
+    'SELECT COALESCE(SUM(rounds_fired), 0) AS total FROM trip_weapons WHERE trip_id = ?',
+    tripId,
+  );
+  return row?.total ?? 0;
 }
 
 export async function createTrip(
@@ -165,14 +204,15 @@ export async function createTrip(
     let order = 0;
     for (const w of input.weapons) {
       await db.runAsync(
-        `INSERT INTO trip_weapons (id, trip_id, weapon_id, possession, rental_note, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO trip_weapons (id, trip_id, weapon_id, possession, rental_note, sort_order, rounds_fired)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         newId(),
         tripId,
         w.weapon_id,
         w.possession,
         w.rental_note?.trim() || null,
         order++,
+        Math.max(0, w.rounds_fired ?? 0),
       );
     }
   });
@@ -230,14 +270,15 @@ export async function updateTrip(
     let order = 0;
     for (const w of input.weapons) {
       await db.runAsync(
-        `INSERT INTO trip_weapons (id, trip_id, weapon_id, possession, rental_note, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO trip_weapons (id, trip_id, weapon_id, possession, rental_note, sort_order, rounds_fired)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         newId(),
         tripId,
         w.weapon_id,
         w.possession,
         w.rental_note?.trim() || null,
         order++,
+        Math.max(0, w.rounds_fired ?? 0),
       );
     }
   });

@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { TargetRowIcon } from '@/components/TargetRowIcon';
 import { AppHeader } from '@/components/theme';
 import {
   Card,
@@ -19,55 +20,68 @@ import {
 } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
-import { recentTargets, recentTrips, type TargetListRow } from '@/lib/db/repository';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import {
+  getTotalRoundsFiredAllTime,
+  recentTargets,
+  recentTrips,
+  type TargetListRow,
+} from '@/lib/db/repository';
 import type { Trip } from '@/lib/types';
 
 export default function HomeScreen() {
   const { db, refreshKey } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [targets, setTargets] = useState<TargetListRow[]>([]);
+  const [allTimeRounds, setAllTimeRounds] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       (async () => {
         setTrips(await recentTrips(db, 5));
         setTargets(await recentTargets(db, 5));
+        setAllTimeRounds(await getTotalRoundsFiredAllTime(db));
       })();
     }, [db, refreshKey]),
   );
 
   return (
     <ScreenScroll>
-      <AppHeader subtitle="Phase 1 · offline range log" />
-      <Text style={styles.subtitle}>Shooting journal — trips, targets, brass‑ring scoring (mock)</Text>
+      <AppHeader
+        subtitle={t('home.phaseSubtitle')}
+        allTimeShotsLabel={t('home.allTimeShots', { count: allTimeRounds })}
+      />
+      <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
 
       <Card>
         <View style={styles.quickRow}>
-          <ButtonRow>
-            <PrimaryButton label="New trip" fullWidth onPress={() => router.push('/trip/new')} />
-            <SecondaryButton label="Browse trips" fullWidth onPress={() => router.push('/(tabs)/trips')} />
+          <ButtonRow layout="row">
+            <PrimaryButton label={t('home.newTrip')} fullWidth onPress={() => router.push('/trip/new')} />
+            <SecondaryButton
+              label={t('home.browseTrips')}
+              fullWidth
+              onPress={() => router.push('/(tabs)/trips')}
+            />
           </ButtonRow>
         </View>
       </Card>
 
-      <SectionHeader title="Recent trips" action={<LinkButton href="/(tabs)/trips" label="See all" />} />
+      <SectionHeader title={t('home.recentTrips')} action={<LinkButton href="/(tabs)/trips" label={t('home.seeAll')} />} />
       <Card>
         {trips.length === 0 ? (
-          <EmptyState
-            title="No trips yet"
-            hint="Start a trip to log range visits and attach targets."
-          />
+          <EmptyState title={t('home.noTrips')} hint={t('home.noTripsHint')} />
         ) : (
           trips.map((item, i) => (
             <View key={item.id}>
               <ListRow
                 title={formatDateShort(item.started_at)}
-                subtitle="Trip detail, weapons, and targets"
+                subtitle={t('home.tripRowSub')}
                 onPress={() => router.push(`/trip/${item.id}`)}
                 right={
                   <StatusPill
-                    label={item.ended_at != null ? 'Completed' : 'In progress'}
+                    label={item.ended_at != null ? t('home.completed') : t('home.inProgress')}
                     tone={item.ended_at != null ? 'success' : 'warning'}
                   />
                 }
@@ -78,21 +92,22 @@ export default function HomeScreen() {
         )}
       </Card>
 
-      <SectionHeader title="Latest targets" action={<LinkButton href="/(tabs)/library" label="Library" />} />
+      <SectionHeader
+        title={t('home.latestTargets')}
+        action={<LinkButton href="/(tabs)/library" label={t('home.library')} />}
+      />
       <Card>
         {targets.length === 0 ? (
-          <EmptyState
-            title="No targets yet"
-            hint="Add a photo from a trip, then score it on the B‑27 template."
-          />
+          <EmptyState title={t('home.noTargets')} hint={t('home.noTargetsHint')} />
         ) : (
           targets.map((item, i) => {
             const st = targetStatusDisplay(item.scoring_status, item.total_score);
             return (
               <View key={item.id}>
                 <ListRow
+                  leading={<TargetRowIcon />}
                   title={formatDateShort(item.created_at)}
-                  subtitle={`Template · ${formatTemplate(item.target_template)}`}
+                  subtitle={t('library.rowSubTemplate', { template: formatTemplate(item.target_template, t) })}
                   onPress={() => router.push(`/target/${item.id}`)}
                   right={<StatusPill label={st.label} tone={st.tone} />}
                 />
@@ -115,12 +130,12 @@ function formatDateShort(ms: number): string {
   });
 }
 
-function formatTemplate(id: string): string {
-  if (id === 'baker_sl_b27e_v1') return 'B‑27 (Baker)';
+function formatTemplate(id: string, t: ReturnType<typeof useI18n>['t']): string {
+  if (id === 'baker_sl_b27e_v1') return t('template.b27');
   return id.replace(/_/g, ' ');
 }
 
 const styles = StyleSheet.create({
   subtitle: { color: AppColors.textMuted, marginBottom: 8, fontSize: 14 },
-  quickRow: { gap: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', padding: 12 },
+  quickRow: { padding: 12 },
 });

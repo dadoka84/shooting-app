@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from '@/components/Themed';
+import { TargetRowIcon } from '@/components/TargetRowIcon';
 import {
   Card,
   EmptyState,
@@ -13,11 +14,13 @@ import {
   targetStatusDisplay,
 } from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 import { listAllTargets, type TargetListRow } from '@/lib/db/repository';
 
 export default function LibraryScreen() {
   const { db, refreshKey } = useDatabase();
   const router = useRouter();
+  const { t } = useI18n();
   const [targets, setTargets] = useState<TargetListRow[]>([]);
 
   useFocusEffect(
@@ -30,20 +33,23 @@ export default function LibraryScreen() {
 
   return (
     <ScreenScroll>
-      <ScreenIntro description="All target photos saved from trips — open any to score or review." />
+      <ScreenIntro description={t('library.intro')} />
 
-      <SectionHeader title="All targets" />
+      <SectionHeader title={t('library.allTargets')} />
       <Card>
         {targets.length === 0 ? (
-          <EmptyState title="No target photos yet" hint="Capture a target from a trip, then open it to score." />
+          <EmptyState title={t('library.empty')} hint={t('library.emptyHint')} />
         ) : (
           targets.map((item, i) => {
             const st = targetStatusDisplay(item.scoring_status, item.total_score);
             return (
               <View key={item.id}>
                 <ListRow
+                  leading={<TargetRowIcon />}
                   title={formatDateShort(item.created_at)}
-                  subtitle={`Trip · ${formatDateShort(item.trip_started_at)} · ${formatTemplate(item.target_template)}`}
+                  subtitle={t('library.rowSubTemplate', {
+                    template: formatTemplate(item.target_template, t),
+                  })}
                   onPress={() => router.push(`/target/${item.id}`)}
                   right={<StatusPill label={st.label} tone={st.tone} />}
                 />
@@ -66,8 +72,7 @@ function formatDateShort(ms: number): string {
   });
 }
 
-function formatTemplate(id: string): string {
-  if (id === 'baker_sl_b27e_v1') return 'B‑27 (Baker)';
+function formatTemplate(id: string, t: ReturnType<typeof useI18n>['t']): string {
+  if (id === 'baker_sl_b27e_v1') return t('template.b27');
   return id.replace(/_/g, ' ');
 }
-

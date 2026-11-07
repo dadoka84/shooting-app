@@ -7,9 +7,11 @@ import { TabHeaderBackground } from '@/components/theme';
 import { AppColors } from '@/constants/theme';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useI18n();
 
   return (
     <Tabs
@@ -42,7 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'WhatShotz',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} tintColor={color} size={26} />
           ),
@@ -51,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="trips"
         options={{
-          title: 'Trips',
+          title: t('tabs.trips'),
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: 'map', android: 'map', web: 'map' }} tintColor={color} size={26} />
           ),
@@ -60,7 +62,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="library"
         options={{
-          title: 'Library',
+          title: t('tabs.library'),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{ ios: 'photo.on.rectangle', android: 'photo_library', web: 'photo_library' }}
@@ -73,7 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="weapons"
         options={{
-          title: 'Weapons',
+          title: t('tabs.weapons'),
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: 'scope', android: 'gps_fixed', web: 'gps_fixed' }} tintColor={color} size={26} />
           ),
@@ -82,7 +84,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'More',
+          title: t('tabs.more'),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{ ios: 'ellipsis.circle', android: 'more_horiz', web: 'more_horiz' }}

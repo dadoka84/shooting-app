@@ -125,12 +125,18 @@ export default function TripDetailScreen() {
 
   const started = new Date(trip.started_at).toLocaleString();
   const ended = trip.ended_at != null ? new Date(trip.ended_at).toLocaleString() : null;
+  const tripRoundsTotal = tripWeapons.reduce((sum, tw) => sum + (tw.rounds_fired ?? 0), 0);
 
   return (
     <ScreenScroll>
       <ScreenIntro
         title={locationName || 'Trip'}
-        description={[started, ended ? `Ended ${ended}` : 'In progress', trip.discipline_tag?.trim()]
+        description={[
+          started,
+          ended ? `Ended ${ended}` : 'In progress',
+          trip.discipline_tag?.trim(),
+          tripRoundsTotal > 0 ? `${tripRoundsTotal} rounds fired` : null,
+        ]
           .filter(Boolean)
           .join(' · ')}
       />
@@ -153,7 +159,13 @@ export default function TripDetailScreen() {
             const linked = tw.weapon_id ? weaponMap[tw.weapon_id] : null;
             const name = linked?.name ?? 'Ad-hoc / unlisted';
             const category = linked?.category ?? 'other';
-            const sub = [tw.possession, tw.rental_note?.trim()].filter(Boolean).join(' · ');
+            const sub = [
+              tw.possession,
+              tw.rental_note?.trim(),
+              tw.rounds_fired > 0 ? `${tw.rounds_fired} rounds` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ');
             return (
               <View key={tw.id}>
                 <WeaponListRow
