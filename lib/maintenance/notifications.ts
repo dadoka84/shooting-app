@@ -60,26 +60,33 @@ export async function syncWeaponMaintenanceNotifications(
   const schedules = await listEnabledMaintenanceSchedules(db);
   for (const row of schedules) {
     const { schedule, owned_rounds_total, weapon_name } = row;
-    const { due, notifyAt } = maintenanceProgress(schedule, owned_rounds_total);
+    const { due, notifyThreshold } = maintenanceProgress(schedule, owned_rounds_total);
     if (!due) continue;
-    if (schedule.alerted_through_rounds >= notifyAt) continue;
+    if (schedule.alerted_through_rounds >= notifyThreshold) continue;
+
+    const content = {
+      title: t('maintenance.notifTitle'),
+      body: t('maintenance.notifBody', {
+        name: weapon_name,
+        rounds: row.rounds_since_service,
+      }),
+      data: { weaponId: schedule.weapon_id, type: 'maintenance' },
+      sound: true,
+      ...(Platform.OS === 'android' ? { channelId: MAINTENANCE_CHANNEL_ID } : {}),
+    };
 
     await Notifications.scheduleNotificationAsync({
-      content: {
-        title: t('maintenance.notifTitle'),
-        body: t('maintenance.notifBody', {
-          name: weapon_name,
-          rounds: row.rounds_since_service,
-        }),
-        data: { weaponId: schedule.weapon_id, type: 'maintenance' },
-        sound: true,
-      },
+      content,
       trigger:
         Platform.OS === 'android'
-          ? { channelId: MAINTENANCE_CHANNEL_ID }
+          ? {
+              type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+              channelId: MAINTENANCE_CHANNEL_ID,
+              seconds: 1,
+            }
           : null,
     });
 
-    await markMaintenanceAlerted(db, schedule.weapon_id, notifyAt);
+    await markMaintenanceAlerted(db, schedule.weapon_id, notifyThreshold);
   }
 }

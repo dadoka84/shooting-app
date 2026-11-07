@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -9,12 +10,24 @@ export function MaintenanceSync() {
   const { db, ready, refreshKey } = useDatabase();
   const { t } = useI18n();
 
-  useEffect(() => {
+  const runSync = useCallback(() => {
     if (!ready) return;
     syncWeaponMaintenanceNotifications(db, t).catch((err) => {
       console.warn('Maintenance notification sync failed', err);
     });
-  }, [db, ready, refreshKey, t]);
+  }, [db, ready, t]);
+
+  useEffect(() => {
+    runSync();
+  }, [runSync, refreshKey]);
+
+  useEffect(() => {
+    const onChange = (state: AppStateStatus) => {
+      if (state === 'active') runSync();
+    };
+    const sub = AppState.addEventListener('change', onChange);
+    return () => sub.remove();
+  }, [runSync]);
 
   return null;
 }

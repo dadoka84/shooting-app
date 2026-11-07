@@ -77,7 +77,10 @@ export type StringKey =
   | 'maintenance.ownedRounds'
   | 'maintenance.listDue'
   | 'maintenance.notifTitle'
-  | 'maintenance.notifBody';
+  | 'maintenance.notifBody'
+  | 'maintenance.badge'
+  | 'home.maintenanceDue'
+  | 'home.maintenanceRowSub';
 
 type Catalog = Record<StringKey, string>;
 
@@ -150,7 +153,7 @@ const en: Catalog = {
   'template.b27': 'B‑27 (Baker)',
   'maintenance.sectionTitle': 'Maintenance schedule',
   'maintenance.intro':
-    'Reminders for owned weapons based on rounds fired (posjed). Rental/borrowed rounds do not count.',
+    'Reminders based on total rounds logged for each weapon on trips. Tap “Mark service complete” after cleaning.',
   'maintenance.enable': 'Enable reminders',
   'maintenance.interval': 'Service every (rounds)',
   'maintenance.markDone': 'Mark service complete',
@@ -160,6 +163,9 @@ const en: Catalog = {
   'maintenance.listDue': 'Maintenance due',
   'maintenance.notifTitle': 'Weapon maintenance',
   'maintenance.notifBody': '{name}: {rounds} rounds since last service',
+  'maintenance.badge': 'Service due',
+  'home.maintenanceDue': 'Maintenance due',
+  'home.maintenanceRowSub': '{count} rounds since service — tap to open weapon',
 };
 
 const bs: Catalog = {
@@ -231,7 +237,7 @@ const bs: Catalog = {
   'template.b27': 'B‑27 (Baker)',
   'maintenance.sectionTitle': 'Raspored održavanja',
   'maintenance.intro':
-    'Podsjetnici za oružje u posjedu prema broju ispucanih metaka. Iznajmljeno/posuđeno se ne računa.',
+    'Podsjetnici prema ukupno zabilježenim metkama na izletima. Nakon čišćenja označi „Servis obavljen”.',
   'maintenance.enable': 'Uključi podsjetnike',
   'maintenance.interval': 'Servis svakih (metaka)',
   'maintenance.markDone': 'Označi servis obavljen',
@@ -241,6 +247,9 @@ const bs: Catalog = {
   'maintenance.listDue': 'Održavanje potrebno',
   'maintenance.notifTitle': 'Održavanje oružja',
   'maintenance.notifBody': '{name}: {rounds} metaka od zadnjeg servisa',
+  'maintenance.badge': 'Servis',
+  'home.maintenanceDue': 'Održavanje potrebno',
+  'home.maintenanceRowSub': '{count} metaka od servisa — dodirni za oružje',
 };
 
 const de: Catalog = {
@@ -322,6 +331,9 @@ const de: Catalog = {
   'maintenance.listDue': 'Wartung fällig',
   'maintenance.notifTitle': 'Waffenwartung',
   'maintenance.notifBody': '{name}: {rounds} Schuss seit letzter Wartung',
+  'maintenance.badge': 'Wartung',
+  'home.maintenanceDue': 'Wartung fällig',
+  'home.maintenanceRowSub': '{count} Schuss seit Wartung — Tippen für Waffe',
 };
 
 export const CATALOG: Record<Locale, Catalog> = { en, bs, de };

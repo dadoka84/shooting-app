@@ -21,12 +21,15 @@ import {
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { listMaintenanceDueWeapons } from '@/lib/db/maintenanceRepository';
 import {
   getTotalRoundsFiredAllTime,
   recentTargets,
   recentTrips,
   type TargetListRow,
 } from '@/lib/db/repository';
+import type { MaintenanceDueRow } from '@/lib/db/maintenanceRepository';
+import { syncWeaponMaintenanceNotifications } from '@/lib/maintenance/notifications';
 import type { Trip } from '@/lib/types';
 import { isTripCompleted } from '@/lib/trips/status';
 
@@ -37,6 +40,7 @@ export default function HomeScreen() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [targets, setTargets] = useState<TargetListRow[]>([]);
   const [allTimeRounds, setAllTimeRounds] = useState(0);
+  const [maintenanceDue, setMaintenanceDue] = useState<MaintenanceDueRow[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -44,8 +48,10 @@ export default function HomeScreen() {
         setTrips(await recentTrips(db, 5));
         setTargets(await recentTargets(db, 5));
         setAllTimeRounds(await getTotalRoundsFiredAllTime(db));
+        setMaintenanceDue(await listMaintenanceDueWeapons(db));
+        await syncWeaponMaintenanceNotifications(db, t);
       })();
-    }, [db, refreshKey]),
+    }, [db, refreshKey, t]),
   );
 
   return (
@@ -65,6 +71,28 @@ export default function HomeScreen() {
           </ButtonRow>
         </View>
       </Card>
+
+      {maintenanceDue.length > 0 ? (
+        <>
+          <SectionHeader
+            title={t('home.maintenanceDue')}
+            action={<LinkButton href="/(tabs)/weapons" label={t('tabs.weapons')} />}
+          />
+          <Card>
+            {maintenanceDue.map((row, i) => (
+              <View key={row.weapon_id}>
+                <ListRow
+                  title={row.weapon_name}
+                  subtitle={t('home.maintenanceRowSub', { count: row.rounds_since_service })}
+                  onPress={() => router.push(`/weapon/${row.weapon_id}`)}
+                  right={<StatusPill label={t('maintenance.badge')} tone="warning" />}
+                />
+                {i < maintenanceDue.length - 1 ? <ListDivider /> : null}
+              </View>
+            ))}
+          </Card>
+        </>
+      ) : null}
 
       <SectionHeader title={t('home.recentTrips')} action={<LinkButton href="/(tabs)/trips" label={t('home.seeAll')} />} />
       <Card>

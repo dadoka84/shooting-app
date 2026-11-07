@@ -8,12 +8,15 @@ import { useDatabase } from '@/lib/db/DatabaseProvider';
 import {
   completeWeaponMaintenance,
   getMaintenanceSchedule,
-  getWeaponOwnedRoundsTotal,
+  getWeaponLoggedRoundsTotal,
   maintenanceProgress,
   upsertMaintenanceSchedule,
 } from '@/lib/db/maintenanceRepository';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { syncWeaponMaintenanceNotifications } from '@/lib/maintenance/notifications';
+import {
+  ensureNotificationPermissions,
+  syncWeaponMaintenanceNotifications,
+} from '@/lib/maintenance/notifications';
 import type { WeaponMaintenanceSchedule } from '@/lib/types';
 
 const DEFAULT_INTERVAL = 100;
@@ -32,7 +35,7 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    setOwnedRounds(await getWeaponOwnedRoundsTotal(db, weaponId));
+    setOwnedRounds(await getWeaponLoggedRoundsTotal(db, weaponId));
     const s = await getMaintenanceSchedule(db, weaponId);
     setSchedule(s);
     if (s) {
@@ -69,6 +72,9 @@ export function WeaponMaintenanceSection({ weaponId }: Props) {
 
   const onToggle = async (value: boolean) => {
     setEnabled(value);
+    if (value) {
+      await ensureNotificationPermissions();
+    }
     await persist(value, interval);
   };
 

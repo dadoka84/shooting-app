@@ -12,17 +12,26 @@ function mapSchedule(row: WeaponMaintenanceSchedule): WeaponMaintenanceSchedule 
   };
 }
 
-export async function getWeaponOwnedRoundsTotal(
+/** All rounds logged on trips for this arsenal weapon. */
+export async function getWeaponLoggedRoundsTotal(
   db: SQLiteDatabase,
   weaponId: string,
 ): Promise<number> {
   const row = await db.getFirstAsync<{ total: number }>(
     `SELECT COALESCE(SUM(rounds_fired), 0) AS total
      FROM trip_weapons
-     WHERE weapon_id = ? AND possession = 'owned'`,
+     WHERE weapon_id = ?`,
     weaponId,
   );
   return row?.total ?? 0;
+}
+
+/** @deprecated Use getWeaponLoggedRoundsTotal */
+export async function getWeaponOwnedRoundsTotal(
+  db: SQLiteDatabase,
+  weaponId: string,
+): Promise<number> {
+  return getWeaponLoggedRoundsTotal(db, weaponId);
 }
 
 export async function getMaintenanceSchedule(
@@ -49,15 +58,13 @@ export async function upsertMaintenanceSchedule(
   const existing = await getMaintenanceSchedule(db, input.weapon_id);
 
   if (!existing) {
-    const baseline = await getWeaponOwnedRoundsTotal(db, input.weapon_id);
     await db.runAsync(
       `INSERT INTO weapon_maintenance_schedules
        (weapon_id, enabled, interval_rounds, baseline_rounds, alerted_through_rounds, updated_at)
-       VALUES (?, ?, ?, ?, 0, ?)`,
+       VALUES (?, ?, ?, 0, 0, ?)`,
       input.weapon_id,
       input.enabled ? 1 : 0,
       interval,
-      baseline,
       ts,
     );
   } else {
@@ -81,7 +88,7 @@ export async function completeWeaponMaintenance(
   db: SQLiteDatabase,
   weaponId: string,
 ): Promise<void> {
-  const baseline = await getWeaponOwnedRoundsTotal(db, weaponId);
+  const baseline = await getWeaponLoggedRoundsTotal(db, weaponId);
   const ts = nowMs();
   const existing = await getMaintenanceSchedule(db, weaponId);
   if (!existing) return;
@@ -123,13 +130,20 @@ export type MaintenanceDueRow = {
 
 export function maintenanceProgress(
   schedule: WeaponMaintenanceSchedule,
-  ownedRoundsTotal: number,
-): { sinceService: number; untilDue: number; due: boolean; notifyAt: number } {
-  const since = Math.max(0, ownedRoundsTotal - schedule.baseline_rounds);
+  loggedRoundsTotal: number,
+): {
+  sinceService: number;
+  untilDue: number;
+  due: boolean;
+  /** Round count at the current interval boundary we last notified for. */
+  notifyThreshold: number;
+} {
+  const since = Math.max(0, loggedRoundsTotal - schedule.baseline_rounds);
   const until = Math.max(0, schedule.interval_rounds - since);
-  const notifyAt = schedule.baseline_rounds + schedule.interval_rounds;
   const due = schedule.enabled === 1 && since >= schedule.interval_rounds;
-  return { sinceService: since, untilDue: until, due, notifyAt };
+  const steps = due ? Math.max(1, Math.floor(since / schedule.interval_rounds)) : 0;
+  const notifyThreshold = schedule.baseline_rounds + steps * schedule.interval_rounds;
+  return { sinceService: since, untilDue: until, due, notifyThreshold };
 }
 
 export async function listEnabledMaintenanceSchedules(
@@ -147,16 +161,25 @@ export async function listEnabledMaintenanceSchedules(
   const result: MaintenanceDueRow[] = [];
   for (const row of rows) {
     const schedule = mapSchedule(row);
-    const owned = await getWeaponOwnedRoundsTotal(db, schedule.weapon_id);
-    const progress = maintenanceProgress(schedule, owned);
+    const logged = await getWeaponLoggedRoundsTotal(db, schedule.weapon_id);
+    const progress = maintenanceProgress(schedule, logged);
     result.push({
       weapon_id: schedule.weapon_id,
       weapon_name: row.weapon_name,
       schedule,
-      owned_rounds_total: owned,
+      owned_rounds_total: logged,
       rounds_since_service: progress.sinceService,
       rounds_until_due: progress.untilDue,
     });
   }
   return result;
+}
+
+export async function listMaintenanceDueWeapons(
+  db: SQLiteDatabase,
+): Promise<MaintenanceDueRow[]> {
+  const rows = await listEnabledMaintenanceSchedules(db);
+  return rows.filter((row) =>
+    maintenanceProgress(row.schedule, row.owned_rounds_total).due,
+  );
 }

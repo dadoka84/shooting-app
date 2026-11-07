@@ -11,10 +11,11 @@ import {
   ScreenIntro,
   ScreenScroll,
   SectionHeader,
+  StatusPill,
 } from '@/components/ui';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { listEnabledMaintenanceSchedules } from '@/lib/db/maintenanceRepository';
+import { listMaintenanceDueWeapons } from '@/lib/db/maintenanceRepository';
 import { listWeaponsWithRoundTotals, type WeaponWithRoundTotal } from '@/lib/db/repository';
 
 export default function WeaponsScreen() {
@@ -28,13 +29,8 @@ export default function WeaponsScreen() {
     useCallback(() => {
       (async () => {
         setWeapons(await listWeaponsWithRoundTotals(db));
-        const schedules = await listEnabledMaintenanceSchedules(db);
-        const due = new Set(
-          schedules
-            .filter((s) => s.rounds_since_service >= s.schedule.interval_rounds)
-            .map((s) => s.weapon_id),
-        );
-        setDueWeaponIds(due);
+        const dueRows = await listMaintenanceDueWeapons(db);
+        setDueWeaponIds(new Set(dueRows.map((s) => s.weapon_id)));
       })();
     }, [db, refreshKey]),
   );
@@ -62,9 +58,14 @@ export default function WeaponsScreen() {
               <WeaponListRow
                 name={item.name}
                 category={item.category}
-                subtitle={weaponSubtitle(item, dueWeaponIds.has(item.id), t)}
+                subtitle={weaponSubtitle(item, t)}
                 onPress={() => router.push(`/weapon/${item.id}`)}
-                showCategoryPill
+                showCategoryPill={!dueWeaponIds.has(item.id)}
+                right={
+                  dueWeaponIds.has(item.id) ? (
+                    <StatusPill label={t('maintenance.badge')} tone="warning" />
+                  ) : undefined
+                }
               />
               {i < weapons.length - 1 ? <ListDivider /> : null}
             </View>
@@ -77,14 +78,12 @@ export default function WeaponsScreen() {
 
 function weaponSubtitle(
   w: WeaponWithRoundTotal,
-  maintenanceDue: boolean,
   t: ReturnType<typeof useI18n>['t'],
 ): string {
   const parts: string[] = [];
   const meta = [w.caliber?.trim(), w.serial_note?.trim()].filter(Boolean) as string[];
   if (meta.length) parts.push(meta.join(' · '));
   parts.push(t('weapons.roundsTotal', { count: w.rounds_fired_total }));
-  if (maintenanceDue) parts.push(t('maintenance.listDue'));
   return parts.join(' · ');
 }
 
