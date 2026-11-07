@@ -15,17 +15,18 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const tabBottom = TabBarLayout.margin + insets.bottom;
+  const tabBottom = TabBarLayout.marginBottom + insets.bottom;
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? 'dark'].tabIconDefault,
+        tabBarShowLabel: false,
         tabBarStyle: {
           position: 'absolute',
-          left: TabBarLayout.margin,
-          right: TabBarLayout.margin,
+          left: TabBarLayout.marginHorizontal,
+          right: TabBarLayout.marginHorizontal,
           bottom: tabBottom,
           height: TabBarLayout.height,
           borderRadius: TabBarLayout.radius,
@@ -33,7 +34,7 @@ export default function TabLayout() {
           borderTopWidth: 0,
           borderWidth: 1,
           borderColor: AppColors.border,
-          paddingTop: 6,
+          paddingTop: 0,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
@@ -48,7 +49,6 @@ export default function TabLayout() {
         tabBarBackground: () => (
           <View style={[tabBarStyles.pillBg, { borderRadius: TabBarLayout.radius }]} />
         ),
-        tabBarLabelStyle: { fontWeight: '600', fontSize: 11 },
         headerTransparent: false,
         headerShadowVisible: false,
         headerBackground: () => <TabHeaderBackground />,
