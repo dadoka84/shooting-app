@@ -94,6 +94,8 @@ function RootLayoutNav() {
         <Stack.Screen name="weapon/edit/[id]" options={{ title: t('stack.editWeapon') }} />
         <Stack.Screen name="ammo/add" options={{ title: t('stack.addAmmo') }} />
         <Stack.Screen name="ammo/reduce" options={{ title: t('stack.reduceAmmo') }} />
+        <Stack.Screen name="range/new" options={{ title: t('stack.addRange') }} />
+        <Stack.Screen name="range/[id]" options={{ title: t('stack.range') }} />
         <Stack.Screen name="target/[id]" options={{ title: t('stack.target') }} />
         <Stack.Screen name="target/score/[id]" options={{ title: t('stack.scoreTarget') }} />
       </Stack>

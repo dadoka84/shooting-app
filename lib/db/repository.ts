@@ -21,6 +21,7 @@ import type { DraftShot } from '@/lib/types';
 import { persistTargetPhoto } from '@/lib/photos';
 import { canonicalCaliberLabel } from '@/lib/ammo/caliberMatch';
 import { syncTripAmmoConsumption, clearTripAmmoConsumption } from '@/lib/db/ammoRepository';
+import { getShootingRange } from '@/lib/db/rangeRepository';
 import { normalizeWeaponCategory } from '@/lib/weapons/categoryDisplay';
 
 function mapWeaponRow(row: Weapon): Weapon {
@@ -106,6 +107,7 @@ export async function listTrips(db: SQLiteDatabase): Promise<Trip[]> {
 
 export type TripBrowseRow = Trip & {
   location_name: string | null;
+  range_id: string | null;
   rounds_total: number;
   weapon_ids: string | null;
 };
@@ -113,11 +115,13 @@ export type TripBrowseRow = Trip & {
 export async function listTripsForBrowse(db: SQLiteDatabase): Promise<TripBrowseRow[]> {
   const rows = await db.getAllAsync<TripBrowseRow>(
     `SELECT t.*,
-            l.display_name AS location_name,
+            COALESCE(sr.name, l.display_name) AS location_name,
+            l.range_id AS range_id,
             COALESCE(SUM(tw.rounds_fired), 0) AS rounds_total,
             GROUP_CONCAT(DISTINCT tw.weapon_id) AS weapon_ids
      FROM trips t
      LEFT JOIN locations l ON l.trip_id = t.id
+     LEFT JOIN shooting_ranges sr ON sr.id = l.range_id
      LEFT JOIN trip_weapons tw ON tw.trip_id = t.id
      GROUP BY t.id
      ORDER BY t.started_at DESC`,
@@ -194,9 +198,7 @@ export async function createTrip(
     started_at: number;
     notes?: string | null;
     discipline_tag?: string | null;
-    location_name: string;
-    latitude?: number | null;
-    longitude?: number | null;
+    range_id: string;
     weapons: TripWeaponInput[];
   },
 ): Promise<string> {
@@ -217,16 +219,21 @@ export async function createTrip(
       ts,
     );
 
+    const range = await getShootingRange(db, input.range_id);
+    if (!range) {
+      throw new Error('Shooting range not found');
+    }
     const locId = newId();
     await db.runAsync(
-      `INSERT INTO locations (id, trip_id, latitude, longitude, display_name, source)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO locations (id, trip_id, latitude, longitude, display_name, source, range_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       locId,
       tripId,
-      input.latitude ?? null,
-      input.longitude ?? null,
-      input.location_name.trim() || 'Unknown range',
-      input.latitude != null ? 'gps' : 'manual',
+      range.latitude,
+      range.longitude,
+      range.name,
+      range.latitude != null ? 'gps' : 'manual',
+      range.id,
     );
 
     let order = 0;
@@ -259,9 +266,7 @@ export async function updateTrip(
     started_at: number;
     notes?: string | null;
     discipline_tag?: string | null;
-    location_name: string;
-    latitude?: number | null;
-    longitude?: number | null;
+    range_id: string;
     weapons: TripWeaponInput[];
   },
 ): Promise<void> {
@@ -275,26 +280,32 @@ export async function updateTrip(
       tripId,
     );
 
+    const range = await getShootingRange(db, input.range_id);
+    if (!range) {
+      throw new Error('Shooting range not found');
+    }
     const existingLoc = await getTripLocation(db, tripId);
     if (existingLoc) {
       await db.runAsync(
-        `UPDATE locations SET display_name = ?, latitude = ?, longitude = ?, source = ? WHERE trip_id = ?`,
-        input.location_name.trim() || 'Unknown range',
-        input.latitude ?? null,
-        input.longitude ?? null,
-        input.latitude != null ? 'gps' : 'manual',
+        `UPDATE locations SET display_name = ?, latitude = ?, longitude = ?, source = ?, range_id = ? WHERE trip_id = ?`,
+        range.name,
+        range.latitude,
+        range.longitude,
+        range.latitude != null ? 'gps' : 'manual',
+        range.id,
         tripId,
       );
     } else {
       await db.runAsync(
-        `INSERT INTO locations (id, trip_id, latitude, longitude, display_name, source)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO locations (id, trip_id, latitude, longitude, display_name, source, range_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         newId(),
         tripId,
-        input.latitude ?? null,
-        input.longitude ?? null,
-        input.location_name.trim() || 'Unknown range',
-        input.latitude != null ? 'gps' : 'manual',
+        range.latitude,
+        range.longitude,
+        range.name,
+        range.latitude != null ? 'gps' : 'manual',
+        range.id,
       );
     }
 

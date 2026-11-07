@@ -59,7 +59,13 @@
           "color": "#3d5c3a"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow location to place your shooting range on the map."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

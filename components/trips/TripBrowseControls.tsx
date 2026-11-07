@@ -8,10 +8,8 @@ import type { TripBrowseRow } from '@/lib/db/repository';
 import type { TripSortMode } from '@/lib/trips/tripBrowse';
 import {
   TRIP_FILTER_ALL,
-  UNKNOWN_PLACE_KEY,
   formatTripDateLabel,
   parseTripWeaponIds,
-  placeGroupsFromRows,
   tripDateKey,
 } from '@/lib/trips/tripBrowse';
 
@@ -21,6 +19,7 @@ type Props = {
   viewMode: TripsViewMode;
   onViewModeChange: (mode: TripsViewMode) => void;
   rows: TripBrowseRow[];
+  rangeFilterOptions: SelectOption<string>[];
   weaponOptions: SelectOption<string>[];
   dateKey: string;
   place: string;
@@ -36,6 +35,7 @@ export function TripBrowseControls({
   viewMode,
   onViewModeChange,
   rows,
+  rangeFilterOptions,
   weaponOptions,
   dateKey,
   place,
@@ -64,27 +64,6 @@ export function TripBrowseControls({
     }
     return opts;
   }, [locale, rows, t]);
-
-  const placeLabelByKey = useMemo(() => placeGroupsFromRows(rows), [rows]);
-
-  const fixedPlaceOptions = useMemo(() => {
-    const opts: SelectOption<string>[] = [
-      { value: TRIP_FILTER_ALL, label: t('trips.filterAllPlaces') },
-    ];
-    const keys = [...placeLabelByKey.keys()].filter((k) => k !== UNKNOWN_PLACE_KEY);
-    keys.sort((a, b) =>
-      (placeLabelByKey.get(a) ?? '').localeCompare(placeLabelByKey.get(b) ?? '', locale, {
-        sensitivity: 'base',
-      }),
-    );
-    for (const key of keys) {
-      opts.push({ value: key, label: placeLabelByKey.get(key) ?? key });
-    }
-    if (placeLabelByKey.has(UNKNOWN_PLACE_KEY)) {
-      opts.push({ value: UNKNOWN_PLACE_KEY, label: t('common.unknownRange') });
-    }
-    return opts;
-  }, [locale, placeLabelByKey, t]);
 
   const weaponFilterOptions = useMemo(() => {
     return [{ value: TRIP_FILTER_ALL, label: t('trips.filterAllWeapons') }, ...weaponOptions];
@@ -137,7 +116,7 @@ export function TripBrowseControls({
               compact
               value={place}
               onChange={onPlaceChange}
-              options={fixedPlaceOptions}
+              options={rangeFilterOptions}
               placeholder={t('trips.filterPlace')}
             />
           </View>

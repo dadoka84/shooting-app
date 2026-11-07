@@ -7,6 +7,7 @@ import { TripFormBody } from '@/app/trip/new';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { TripAmmoInsufficientError } from '@/lib/db/ammoRepository';
+import { listShootingRanges } from '@/lib/db/rangeRepository';
 import {
   getTrip,
   getTripLocation,
@@ -14,7 +15,7 @@ import {
   listWeapons,
   updateTrip,
 } from '@/lib/db/repository';
-import type { TripWeaponInput, Weapon } from '@/lib/types';
+import type { ShootingRange, TripWeaponInput, Weapon } from '@/lib/types';
 
 export default function EditTripScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,8 @@ export default function EditTripScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const [locationName, setLocationName] = useState('');
+  const [ranges, setRanges] = useState<ShootingRange[]>([]);
+  const [rangeId, setRangeId] = useState('');
   const [notes, setNotes] = useState('');
   const [discipline, setDiscipline] = useState('');
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -32,18 +34,20 @@ export default function EditTripScreen() {
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const [trip, loc, tws, weaponList] = await Promise.all([
+      const [trip, loc, tws, weaponList, rangeList] = await Promise.all([
         getTrip(db, id),
         getTripLocation(db, id),
         listTripWeapons(db, id),
         listWeapons(db),
+        listShootingRanges(db),
       ]);
       if (trip) {
         setStartedAt(trip.started_at);
         setNotes(trip.notes ?? '');
         setDiscipline(trip.discipline_tag ?? '');
       }
-      setLocationName(loc?.display_name ?? '');
+      setRangeId(loc?.range_id ?? '');
+      setRanges(rangeList);
       setTripWeapons(
         tws.map((tw) => ({
           weapon_id: tw.weapon_id,
@@ -61,14 +65,14 @@ export default function EditTripScreen() {
   }, [db, id]);
 
   const save = async () => {
-    if (!id || !locationName.trim()) {
-      Alert.alert(t('trip.locationRequired'), t('trip.locationRequiredHint'));
+    if (!id || !rangeId) {
+      Alert.alert(t('trip.rangeRequired'), t('trip.rangeRequiredHint'));
       return;
     }
     try {
       await updateTrip(db, id, {
         started_at: startedAt,
-        location_name: locationName,
+        range_id: rangeId,
         notes,
         discipline_tag: discipline || null,
         weapons: tripWeapons,
@@ -102,8 +106,10 @@ export default function EditTripScreen() {
         description={t('trip.newStarted', { when: new Date(startedAt).toLocaleString() })}
       />
       <TripFormBody
-        locationName={locationName}
-        setLocationName={setLocationName}
+        rangeId={rangeId}
+        setRangeId={setRangeId}
+        rangeOptions={ranges.map((r) => ({ value: r.id, label: r.name }))}
+        onAddRange={() => router.push('/range/new')}
         notes={notes}
         setNotes={setNotes}
         discipline={discipline}

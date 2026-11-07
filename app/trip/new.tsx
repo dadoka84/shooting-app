@@ -5,6 +5,7 @@ import { Text, View } from '@/components/Themed';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { RoundsFiredPicker } from '@/components/RoundsFiredPicker';
 import { WeaponCategoryIcon } from '@/components/weapons/WeaponCategoryIcon';
+import { SelectField, type SelectOption } from '@/components/SelectField';
 import { OutlineButton, PrimaryButton, ScreenIntro, ScreenScroll, SectionHeader } from '@/components/ui';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { possessionStringKey } from '@/lib/i18n/possession';
@@ -12,7 +13,9 @@ import type { StringKey } from '@/lib/i18n/strings';
 import { AppColors } from '@/constants/theme';
 import { useDatabase } from '@/lib/db/DatabaseProvider';
 import { TripAmmoInsufficientError } from '@/lib/db/ammoRepository';
+import { listShootingRanges } from '@/lib/db/rangeRepository';
 import { createTrip, listWeapons } from '@/lib/db/repository';
+import type { ShootingRange } from '@/lib/types';
 import type { Possession, TripWeaponInput, Weapon } from '@/lib/types';
 
 const POSSESSIONS: Possession[] = ['owned', 'rental', 'borrowed'];
@@ -21,7 +24,8 @@ export default function NewTripScreen() {
   const { db, bumpRefresh } = useDatabase();
   const router = useRouter();
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const [locationName, setLocationName] = useState('');
+  const [ranges, setRanges] = useState<ShootingRange[]>([]);
+  const [rangeId, setRangeId] = useState('');
   const [notes, setNotes] = useState('');
   const [discipline, setDiscipline] = useState('');
   const [startedAt] = useState(() => Date.now());
@@ -33,20 +37,25 @@ export default function NewTripScreen() {
 
   useEffect(() => {
     (async () => {
-      setWeapons(await listWeapons(db));
+      const [weaponList, rangeList] = await Promise.all([listWeapons(db), listShootingRanges(db)]);
+      setWeapons(weaponList);
+      setRanges(rangeList);
     })();
   }, [db]);
 
+  const rangeOptions: SelectOption<string>[] = ranges.map((r) => ({ value: r.id, label: r.name }));
+
   const save = async () => {
-    if (!locationName.trim()) {
-      Alert.alert(t('trip.locationRequired'), t('trip.locationRequiredHint'));
+    if (!rangeId) {
+      Alert.alert(t('trip.rangeRequired'), t('trip.rangeRequiredHint'));
       return;
     }
+    const rangeName = ranges.find((r) => r.id === rangeId)?.name ?? '';
     setSaving(true);
     try {
       const tripId = await createTrip(db, {
         started_at: startedAt,
-        location_name: locationName,
+        range_id: rangeId,
         notes,
         discipline_tag: discipline || null,
         weapons: tripWeapons,
@@ -54,7 +63,7 @@ export default function NewTripScreen() {
       bumpRefresh();
       router.replace({
         pathname: '/trip/[id]',
-        params: { id: tripId, saved: '1', name: locationName.trim() },
+        params: { id: tripId, saved: '1', name: rangeName.trim() },
       });
     } catch (e) {
       if (e instanceof TripAmmoInsufficientError) {
@@ -76,7 +85,19 @@ export default function NewTripScreen() {
           title={t('trip.newTitle')}
           description={t('trip.newStarted', { when: new Date(startedAt).toLocaleString() })}
         />
-        <LabelField label={t('trip.locationLabel')} value={locationName} onChangeText={setLocationName} />
+        <Text style={styles.label}>{t('trip.rangeLabel')}</Text>
+        <SelectField
+          value={rangeId}
+          onChange={setRangeId}
+          options={rangeOptions}
+          placeholder={t('trip.rangeLabel')}
+          disabled={rangeOptions.length === 0}
+        />
+        <OutlineButton
+          label={t('trip.addRange')}
+          fullWidth
+          onPress={() => router.push('/range/new')}
+        />
         <LabelField
           label={t('trip.disciplineLabel')}
           value={discipline}
@@ -157,8 +178,10 @@ export default function NewTripScreen() {
 }
 
 export function TripFormBody({
-  locationName,
-  setLocationName,
+  rangeId,
+  setRangeId,
+  rangeOptions,
+  onAddRange,
   notes,
   setNotes,
   discipline,
@@ -169,8 +192,10 @@ export function TripFormBody({
   roundsLabels,
   translate,
 }: {
-  locationName: string;
-  setLocationName: (v: string) => void;
+  rangeId: string;
+  setRangeId: (v: string) => void;
+  rangeOptions: SelectOption<string>[];
+  onAddRange: () => void;
   notes: string;
   setNotes: (v: string) => void;
   discipline: string;
@@ -184,7 +209,15 @@ export function TripFormBody({
   const t = translate;
   return (
     <>
-      <LabelField label={t('trip.locationLabel')} value={locationName} onChangeText={setLocationName} />
+      <Text style={styles.label}>{t('trip.rangeLabel')}</Text>
+      <SelectField
+        value={rangeId}
+        onChange={setRangeId}
+        options={rangeOptions}
+        placeholder={t('trip.rangeLabel')}
+        disabled={rangeOptions.length === 0}
+      />
+      <OutlineButton label={t('trip.addRange')} fullWidth onPress={onAddRange} />
       <LabelField label={t('trip.disciplineLabel')} value={discipline} onChangeText={setDiscipline} />
       <LabelField label={t('common.notes')} value={notes} onChangeText={setNotes} multiline />
       <Text style={styles.section}>{t('trip.weaponsSection')}</Text>

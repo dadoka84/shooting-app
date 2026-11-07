@@ -15,43 +15,19 @@ export function parseTripWeaponIds(raw: string | null | undefined): string[] {
 
 export const TRIP_FILTER_ALL = '__all__' as const;
 export const UNKNOWN_PLACE_KEY = '__unknown__';
+export const TRIP_UNLINKED_KEY = '__unlinked__';
 
-/** Case- and whitespace-insensitive key for grouping range / place names. */
 export function placeGroupKey(locationName: string | null | undefined): string {
   const trimmed = locationName?.trim();
   if (!trimmed) return UNKNOWN_PLACE_KEY;
   return trimmed.toLocaleLowerCase().replace(/\s+/g, ' ');
 }
 
-/** Canonical display label per place group (most-used spelling in data). */
-export function placeGroupsFromRows(rows: TripBrowseRow[]): Map<string, string> {
-  const variants = new Map<string, Map<string, number>>();
-  for (const r of rows) {
-    const key = placeGroupKey(r.location_name);
-    const variant = key === UNKNOWN_PLACE_KEY ? '' : (r.location_name?.trim() ?? '');
-    let inner = variants.get(key);
-    if (!inner) {
-      inner = new Map();
-      variants.set(key, inner);
-    }
-    inner.set(variant, (inner.get(variant) ?? 0) + 1);
-  }
-  const result = new Map<string, string>();
-  for (const [key, inner] of variants) {
-    let bestVariant = '';
-    let bestCount = -1;
-    for (const [variant, count] of inner) {
-      if (
-        count > bestCount ||
-        (count === bestCount && variant.localeCompare(bestVariant, undefined, { sensitivity: 'base' }) < 0)
-      ) {
-        bestVariant = variant;
-        bestCount = count;
-      }
-    }
-    result.set(key, bestVariant);
-  }
-  return result;
+export function tripSectionKey(row: TripBrowseRow): string {
+  if (row.range_id) return row.range_id;
+  const name = row.location_name?.trim();
+  if (!name) return UNKNOWN_PLACE_KEY;
+  return `legacy:${placeGroupKey(name)}`;
 }
 
 export type TripPlaceSection = {
@@ -63,12 +39,12 @@ export type TripPlaceSection = {
 export function groupFilteredTripsByPlace(
   rows: TripBrowseRow[],
   unknownLabel: string,
+  sortMode: TripSortMode,
   locale?: string,
 ): TripPlaceSection[] {
-  const canonical = placeGroupsFromRows(rows);
   const buckets = new Map<string, TripBrowseRow[]>();
   for (const r of rows) {
-    const key = placeGroupKey(r.location_name);
+    const key = tripSectionKey(r);
     const list = buckets.get(key) ?? [];
     list.push(r);
     buckets.set(key, list);
@@ -78,10 +54,21 @@ export function groupFilteredTripsByPlace(
     const title =
       placeKey === UNKNOWN_PLACE_KEY
         ? unknownLabel
-        : canonical.get(placeKey) || trips[0]?.location_name?.trim() || unknownLabel;
+        : placeKey.startsWith('legacy:')
+          ? trips[0]?.location_name?.trim() || unknownLabel
+          : trips[0]?.location_name?.trim() || unknownLabel;
     sections.push({ placeKey, title, trips });
   }
   sections.sort((a, b) => {
+    if (sortMode === 'ammo_desc') {
+      const maxA = Math.max(...a.trips.map((t) => Number(t.rounds_total ?? 0)));
+      const maxB = Math.max(...b.trips.map((t) => Number(t.rounds_total ?? 0)));
+      if (maxB !== maxA) return maxB - maxA;
+    } else {
+      const latestA = Math.max(...a.trips.map((t) => t.started_at));
+      const latestB = Math.max(...b.trips.map((t) => t.started_at));
+      if (latestB !== latestA) return latestB - latestA;
+    }
     if (a.placeKey === UNKNOWN_PLACE_KEY) return 1;
     if (b.placeKey === UNKNOWN_PLACE_KEY) return -1;
     return a.title.localeCompare(b.title, locale, { sensitivity: 'base' });
@@ -117,7 +104,13 @@ export function applyTripBrowseFilters(
     out = out.filter((r) => tripDateKey(r.started_at) === filters.dateKey);
   }
   if (filters.place !== TRIP_FILTER_ALL) {
-    out = out.filter((r) => placeGroupKey(r.location_name) === filters.place);
+    if (filters.place === TRIP_UNLINKED_KEY) {
+      out = out.filter((r) => !r.range_id);
+    } else if (filters.place === UNKNOWN_PLACE_KEY) {
+      out = out.filter((r) => tripSectionKey(r) === UNKNOWN_PLACE_KEY);
+    } else {
+      out = out.filter((r) => r.range_id === filters.place);
+    }
   }
   if (filters.weaponId !== TRIP_FILTER_ALL) {
     out = out.filter((r) => parseTripWeaponIds(r.weapon_ids).includes(filters.weaponId));
@@ -126,7 +119,7 @@ export function applyTripBrowseFilters(
   const sorted = [...out];
   if (filters.sort === 'ammo_desc') {
     sorted.sort((a, b) => {
-      const diff = (b.rounds_total ?? 0) - (a.rounds_total ?? 0);
+      const diff = Number(b.rounds_total ?? 0) - Number(a.rounds_total ?? 0);
       if (diff !== 0) return diff;
       return b.started_at - a.started_at;
     });

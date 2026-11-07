@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { canonicalCaliberLabel } from '@/lib/ammo/caliberMatch';
 
 export const DB_NAME = 'shooting.db';
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 const MIGRATION_V1 = `
 PRAGMA foreign_keys = ON;
@@ -287,6 +287,34 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
       await db.runAsync(
         'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
         9,
+        Date.now(),
+      );
+    }
+    if (current < 10) {
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS shooting_ranges (
+          id TEXT PRIMARY KEY NOT NULL,
+          name TEXT NOT NULL,
+          address TEXT,
+          phone TEXT,
+          web TEXT,
+          email TEXT,
+          comment TEXT,
+          latitude REAL,
+          longitude REAL,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_shooting_ranges_name ON shooting_ranges(name COLLATE NOCASE);
+      `);
+      try {
+        await db.execAsync('ALTER TABLE locations ADD COLUMN range_id TEXT REFERENCES shooting_ranges(id) ON DELETE SET NULL');
+      } catch {
+        // column may exist during dev reload
+      }
+      await db.runAsync(
+        'INSERT OR REPLACE INTO schema_migrations (version, applied_at) VALUES (?, ?)',
+        10,
         Date.now(),
       );
     }

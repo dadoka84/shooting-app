@@ -45,6 +45,22 @@ export interface Location {
   longitude: number | null;
   display_name: string;
   source: LocationSource;
+  range_id: string | null;
+}
+
+/** User-managed shooting range / place catalog. */
+export interface ShootingRange {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  web: string | null;
+  email: string | null;
+  comment: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_at: number;
+  updated_at: number;
 }
 
 export interface TargetImage {

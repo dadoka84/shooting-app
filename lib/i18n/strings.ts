@@ -51,6 +51,17 @@ export type StringKey =
   | 'trips.clearDateFilter'
   | 'trips.calendarTripsCount'
   | 'trips.rowRoundsSub'
+  | 'trips.rowMetaSub'
+  | 'trips.filterUnlinkedPlaces'
+  | 'ranges.section'
+  | 'ranges.intro'
+  | 'ranges.add'
+  | 'ranges.empty'
+  | 'ranges.emptyHint'
+  | 'ranges.rowSub'
+  | 'stack.addRange'
+  | 'stack.range'
+  | 'stack.editRange'
   | 'library.intro'
   | 'library.allTargets'
   | 'library.empty'
@@ -162,6 +173,17 @@ const en: Catalog = {
   'trips.clearDateFilter': 'Clear date filter',
   'trips.calendarTripsCount': '{count} trips',
   'trips.rowRoundsSub': '{rounds} rounds · {when}',
+  'trips.rowMetaSub': '{rounds} rounds',
+  'trips.filterUnlinkedPlaces': 'Older unlinked trips',
+  'ranges.section': 'Shooting ranges',
+  'ranges.intro': 'Save places you shoot — used for trip location and filters.',
+  'ranges.add': 'Add range',
+  'ranges.empty': 'No ranges yet',
+  'ranges.emptyHint': 'Add a range with name, contacts, and a map pin.',
+  'ranges.rowSub': '{details}',
+  'stack.addRange': 'Add range',
+  'stack.range': 'Range',
+  'stack.editRange': 'Edit range',
   'library.intro': 'All target photos saved from trips — open any to score or review.',
   'library.allTargets': 'All targets',
   'library.empty': 'No target photos yet',
@@ -273,6 +295,17 @@ const bs: Catalog = {
   'trips.clearDateFilter': 'Poništi filter datuma',
   'trips.calendarTripsCount': '{count} izleta',
   'trips.rowRoundsSub': '{rounds} metaka · {when}',
+  'trips.rowMetaSub': '{rounds} metaka',
+  'trips.filterUnlinkedPlaces': 'Stariji nepotpuni izleti',
+  'ranges.section': 'Streljane',
+  'ranges.intro': 'Sačuvajte mjesta gdje pucate — za izlete i filtere.',
+  'ranges.add': 'Dodaj streljanu',
+  'ranges.empty': 'Još nema streljana',
+  'ranges.emptyHint': 'Dodajte naziv, kontakte i pin na mapi.',
+  'ranges.rowSub': '{details}',
+  'stack.addRange': 'Dodaj streljanu',
+  'stack.range': 'Streljana',
+  'stack.editRange': 'Uredi streljanu',
   'library.intro': 'Sve fotografije meta s izleta — otvorite za ocjenu ili pregled.',
   'library.allTargets': 'Sve mete',
   'library.empty': 'Nema fotografija meta',
@@ -384,6 +417,17 @@ const de: Catalog = {
   'trips.clearDateFilter': 'Datumsfilter löschen',
   'trips.calendarTripsCount': '{count} Ausflüge',
   'trips.rowRoundsSub': '{rounds} Schuss · {when}',
+  'trips.rowMetaSub': '{rounds} Schuss',
+  'trips.filterUnlinkedPlaces': 'Ältere ohne Stand',
+  'ranges.section': 'Schießstände',
+  'ranges.intro': 'Orte speichern — für Ausflüge und Filter.',
+  'ranges.add': 'Stand hinzufügen',
+  'ranges.empty': 'Noch keine Stände',
+  'ranges.emptyHint': 'Name, Kontakte und Karte setzen.',
+  'ranges.rowSub': '{details}',
+  'stack.addRange': 'Stand hinzufügen',
+  'stack.range': 'Stand',
+  'stack.editRange': 'Stand bearbeiten',
   'library.intro': 'Alle Zielfotos — zum Werten oder Ansehen öffnen.',
   'library.allTargets': 'Alle Ziele',
   'library.empty': 'Keine Zielfotos',
