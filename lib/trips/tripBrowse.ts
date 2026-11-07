@@ -14,6 +14,80 @@ export function parseTripWeaponIds(raw: string | null | undefined): string[] {
 }
 
 export const TRIP_FILTER_ALL = '__all__' as const;
+export const UNKNOWN_PLACE_KEY = '__unknown__';
+
+/** Case- and whitespace-insensitive key for grouping range / place names. */
+export function placeGroupKey(locationName: string | null | undefined): string {
+  const trimmed = locationName?.trim();
+  if (!trimmed) return UNKNOWN_PLACE_KEY;
+  return trimmed.toLocaleLowerCase().replace(/\s+/g, ' ');
+}
+
+/** Canonical display label per place group (most-used spelling in data). */
+export function placeGroupsFromRows(rows: TripBrowseRow[]): Map<string, string> {
+  const variants = new Map<string, Map<string, number>>();
+  for (const r of rows) {
+    const key = placeGroupKey(r.location_name);
+    const variant = key === UNKNOWN_PLACE_KEY ? '' : (r.location_name?.trim() ?? '');
+    let inner = variants.get(key);
+    if (!inner) {
+      inner = new Map();
+      variants.set(key, inner);
+    }
+    inner.set(variant, (inner.get(variant) ?? 0) + 1);
+  }
+  const result = new Map<string, string>();
+  for (const [key, inner] of variants) {
+    let bestVariant = '';
+    let bestCount = -1;
+    for (const [variant, count] of inner) {
+      if (
+        count > bestCount ||
+        (count === bestCount && variant.localeCompare(bestVariant, undefined, { sensitivity: 'base' }) < 0)
+      ) {
+        bestVariant = variant;
+        bestCount = count;
+      }
+    }
+    result.set(key, bestVariant);
+  }
+  return result;
+}
+
+export type TripPlaceSection = {
+  placeKey: string;
+  title: string;
+  trips: TripBrowseRow[];
+};
+
+export function groupFilteredTripsByPlace(
+  rows: TripBrowseRow[],
+  unknownLabel: string,
+  locale?: string,
+): TripPlaceSection[] {
+  const canonical = placeGroupsFromRows(rows);
+  const buckets = new Map<string, TripBrowseRow[]>();
+  for (const r of rows) {
+    const key = placeGroupKey(r.location_name);
+    const list = buckets.get(key) ?? [];
+    list.push(r);
+    buckets.set(key, list);
+  }
+  const sections: TripPlaceSection[] = [];
+  for (const [placeKey, trips] of buckets) {
+    const title =
+      placeKey === UNKNOWN_PLACE_KEY
+        ? unknownLabel
+        : canonical.get(placeKey) || trips[0]?.location_name?.trim() || unknownLabel;
+    sections.push({ placeKey, title, trips });
+  }
+  sections.sort((a, b) => {
+    if (a.placeKey === UNKNOWN_PLACE_KEY) return 1;
+    if (b.placeKey === UNKNOWN_PLACE_KEY) return -1;
+    return a.title.localeCompare(b.title, locale, { sensitivity: 'base' });
+  });
+  return sections;
+}
 
 export type TripSortMode = 'started_desc' | 'ammo_desc';
 
@@ -43,11 +117,7 @@ export function applyTripBrowseFilters(
     out = out.filter((r) => tripDateKey(r.started_at) === filters.dateKey);
   }
   if (filters.place !== TRIP_FILTER_ALL) {
-    if (filters.place === '__unknown__') {
-      out = out.filter((r) => !r.location_name?.trim());
-    } else {
-      out = out.filter((r) => (r.location_name?.trim() ?? '') === filters.place);
-    }
+    out = out.filter((r) => placeGroupKey(r.location_name) === filters.place);
   }
   if (filters.weaponId !== TRIP_FILTER_ALL) {
     out = out.filter((r) => parseTripWeaponIds(r.weapon_ids).includes(filters.weaponId));

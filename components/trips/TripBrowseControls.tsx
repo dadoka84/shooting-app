@@ -8,8 +8,10 @@ import type { TripBrowseRow } from '@/lib/db/repository';
 import type { TripSortMode } from '@/lib/trips/tripBrowse';
 import {
   TRIP_FILTER_ALL,
+  UNKNOWN_PLACE_KEY,
   formatTripDateLabel,
   parseTripWeaponIds,
+  placeGroupsFromRows,
   tripDateKey,
 } from '@/lib/trips/tripBrowse';
 
@@ -63,27 +65,26 @@ export function TripBrowseControls({
     return opts;
   }, [locale, rows, t]);
 
+  const placeLabelByKey = useMemo(() => placeGroupsFromRows(rows), [rows]);
+
   const fixedPlaceOptions = useMemo(() => {
     const opts: SelectOption<string>[] = [
       { value: TRIP_FILTER_ALL, label: t('trips.filterAllPlaces') },
     ];
-    const seen = new Set<string>();
-    for (const r of rows) {
-      const key = r.location_name?.trim() ? r.location_name.trim() : '__unknown__';
-      if (seen.has(key)) continue;
-      seen.add(key);
-      opts.push({
-        value: key,
-        label: key === '__unknown__' ? t('common.unknownRange') : key,
-      });
+    const keys = [...placeLabelByKey.keys()].filter((k) => k !== UNKNOWN_PLACE_KEY);
+    keys.sort((a, b) =>
+      (placeLabelByKey.get(a) ?? '').localeCompare(placeLabelByKey.get(b) ?? '', locale, {
+        sensitivity: 'base',
+      }),
+    );
+    for (const key of keys) {
+      opts.push({ value: key, label: placeLabelByKey.get(key) ?? key });
     }
-    opts.sort((a, b) => {
-      if (a.value === TRIP_FILTER_ALL) return -1;
-      if (b.value === TRIP_FILTER_ALL) return 1;
-      return a.label.localeCompare(b.label, locale);
-    });
+    if (placeLabelByKey.has(UNKNOWN_PLACE_KEY)) {
+      opts.push({ value: UNKNOWN_PLACE_KEY, label: t('common.unknownRange') });
+    }
     return opts;
-  }, [locale, rows, t]);
+  }, [locale, placeLabelByKey, t]);
 
   const weaponFilterOptions = useMemo(() => {
     return [{ value: TRIP_FILTER_ALL, label: t('trips.filterAllWeapons') }, ...weaponOptions];
@@ -119,32 +120,73 @@ export function TripBrowseControls({
       </View>
 
       <View style={styles.filters}>
-        {viewMode === 'list' ? (
-          <SelectField
-            value={dateKey}
-            onChange={onDateKeyChange}
-            options={dateOptions}
-            placeholder={t('trips.filterDate')}
-          />
-        ) : null}
-        <SelectField
-          value={place}
-          onChange={onPlaceChange}
-          options={fixedPlaceOptions}
-          placeholder={t('trips.filterPlace')}
-        />
-        <SelectField
-          value={weaponId}
-          onChange={onWeaponIdChange}
-          options={weaponFilterOptions}
-          placeholder={t('trips.filterWeapon')}
-        />
-        <SelectField
-          value={sort}
-          onChange={onSortChange}
-          options={sortOptions}
-          placeholder={t('trips.sortBy')}
-        />
+        <View style={styles.filterRow}>
+          {viewMode === 'list' ? (
+            <View style={styles.filterHalf}>
+              <SelectField
+                compact
+                value={dateKey}
+                onChange={onDateKeyChange}
+                options={dateOptions}
+                placeholder={t('trips.filterDate')}
+              />
+            </View>
+          ) : null}
+          <View style={styles.filterHalf}>
+            <SelectField
+              compact
+              value={place}
+              onChange={onPlaceChange}
+              options={fixedPlaceOptions}
+              placeholder={t('trips.filterPlace')}
+            />
+          </View>
+          {viewMode === 'calendar' ? (
+            <View style={styles.filterHalf}>
+              <SelectField
+                compact
+                value={weaponId}
+                onChange={onWeaponIdChange}
+                options={weaponFilterOptions}
+                placeholder={t('trips.filterWeapon')}
+              />
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.filterRow}>
+          {viewMode === 'list' ? (
+            <>
+              <View style={styles.filterHalf}>
+                <SelectField
+                  compact
+                  value={weaponId}
+                  onChange={onWeaponIdChange}
+                  options={weaponFilterOptions}
+                  placeholder={t('trips.filterWeapon')}
+                />
+              </View>
+              <View style={styles.filterHalf}>
+                <SelectField
+                  compact
+                  value={sort}
+                  onChange={onSortChange}
+                  options={sortOptions}
+                  placeholder={t('trips.sortBy')}
+                />
+              </View>
+            </>
+          ) : (
+            <View style={styles.filterHalf}>
+              <SelectField
+                compact
+                value={sort}
+                onChange={onSortChange}
+                options={sortOptions}
+                placeholder={t('trips.sortBy')}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -177,7 +219,7 @@ const styles = StyleSheet.create({
   },
   viewBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: AppColors.borderSubtle,
@@ -197,6 +239,15 @@ const styles = StyleSheet.create({
     color: AppColors.accentBrass,
   },
   filters: {
-    gap: 10,
+    gap: 8,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'stretch',
+  },
+  filterHalf: {
+    flex: 1,
+    minWidth: 0,
   },
 });

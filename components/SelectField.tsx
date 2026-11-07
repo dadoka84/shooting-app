@@ -7,6 +7,8 @@ import {
   Text,
   View,
   type ListRenderItemInfo,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
@@ -20,12 +22,16 @@ export function SelectField<T extends string>({
   options,
   placeholder,
   disabled,
+  compact,
+  style,
 }: {
   value: T;
   onChange: (v: T) => void;
   options: SelectOption<T>[];
   placeholder?: string;
   disabled?: boolean;
+  compact?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -39,12 +45,21 @@ export function SelectField<T extends string>({
         onPress={() => setOpen(true)}
         style={({ pressed }) => [
           styles.trigger,
+          compact && styles.triggerCompact,
           disabled && styles.triggerDisabled,
           pressed && !disabled && styles.triggerPressed,
+          style,
         ]}
         accessibilityRole="button"
       >
-        <Text style={[styles.triggerText, !selected && styles.placeholder]} numberOfLines={1}>
+        <Text
+          style={[
+            styles.triggerText,
+            compact && styles.triggerTextCompact,
+            !selected && styles.placeholder,
+          ]}
+          numberOfLines={1}
+        >
           {display}
         </Text>
         <Text style={styles.chevron}>▾</Text>
@@ -104,6 +119,16 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.surfaceRaised,
     marginTop: 4,
     gap: 8,
+  },
+  triggerCompact: {
+    marginTop: 0,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  triggerTextCompact: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   triggerDisabled: { opacity: 0.45 },
   triggerPressed: { opacity: 0.9 },

@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { AppColors } from '@/constants/theme';
 import {
   buildWeaponFilterOptions,
   TripBrowseControls,
@@ -28,6 +29,7 @@ import {
   TRIP_FILTER_ALL,
   applyTripBrowseFilters,
   defaultTripBrowseFilters,
+  groupFilteredTripsByPlace,
   tripsByDateKey,
   type TripBrowseFilters,
   type TripSortMode,
@@ -36,7 +38,7 @@ import {
 export default function TripsScreen() {
   const { db, refreshKey } = useDatabase();
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [rows, setRows] = useState<TripBrowseRow[]>([]);
   const [weaponNames, setWeaponNames] = useState<Map<string, string>>(new Map());
   const [viewMode, setViewMode] = useState<TripsViewMode>('list');
@@ -61,6 +63,11 @@ export default function TripsScreen() {
   const eventCounts = useMemo(() => tripsByDateKey(rows), [rows]);
 
   const displayRows = useMemo(() => applyTripBrowseFilters(rows, filters), [rows, filters]);
+
+  const placeSections = useMemo(
+    () => groupFilteredTripsByPlace(displayRows, t('common.unknownRange'), locale),
+    [displayRows, locale, t],
+  );
 
   const calendarSelectedKey =
     filters.dateKey !== TRIP_FILTER_ALL ? filters.dateKey : null;
@@ -129,26 +136,54 @@ export default function TripsScreen() {
             hint={rows.length === 0 ? t('trips.emptyHint') : undefined}
           />
         ) : (
-          displayRows.map((item, i) => (
-            <View key={item.id}>
-              <ListRow
-                title={item.location_name?.trim() || t('common.unknownRange')}
-                subtitle={formatTripRowSubtitle(item, t)}
-                onPress={() => router.push(`/trip/${item.id}`)}
-                right={
-                  <StatusPill
-                    label={isTripCompleted(item) ? t('trips.done') : t('trips.open')}
-                    tone={isTripCompleted(item) ? 'success' : 'warning'}
+          placeSections.map((section, sectionIndex) => (
+            <View key={section.placeKey}>
+              {sectionIndex > 0 ? <ListDivider /> : null}
+              <View style={styles.placeGroupHeader}>
+                <Text style={styles.placeGroupTitle} numberOfLines={1}>
+                  {section.title}
+                </Text>
+                <Text style={styles.placeGroupMeta}>{section.trips.length}</Text>
+              </View>
+              {section.trips.map((item, i) => (
+                <View key={item.id}>
+                  <ListRow
+                    title={formatTripListTitle(item, section)}
+                    subtitle={formatTripRowSubtitle(item, t)}
+                    onPress={() => router.push(`/trip/${item.id}`)}
+                    right={
+                      <StatusPill
+                        label={isTripCompleted(item) ? t('trips.done') : t('trips.open')}
+                        tone={isTripCompleted(item) ? 'success' : 'warning'}
+                      />
+                    }
                   />
-                }
-              />
-              {i < displayRows.length - 1 ? <ListDivider /> : null}
+                  {i < section.trips.length - 1 ? <ListDivider /> : null}
+                </View>
+              ))}
             </View>
           ))
         )}
       </Card>
     </ScreenScroll>
   );
+}
+
+function formatTripListTitle(
+  trip: TripBrowseRow,
+  section: { title: string; trips: TripBrowseRow[] },
+): string {
+  const when = new Date(trip.started_at).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  if (section.trips.length > 1) {
+    return when;
+  }
+  const extra = trip.discipline_tag?.trim();
+  return extra ? `${section.title} · ${extra}` : section.title;
 }
 
 function formatTripRowSubtitle(
@@ -171,4 +206,26 @@ const styles = StyleSheet.create({
   ctaPad: { padding: 12 },
   browsePad: { padding: 12, paddingBottom: 4, gap: 12 },
   calendarBlock: { marginTop: 4 },
+  placeGroupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 4,
+    gap: 8,
+  },
+  placeGroupTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '800',
+    color: AppColors.accentBrass,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  placeGroupMeta: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: AppColors.textMuted,
+  },
 });
